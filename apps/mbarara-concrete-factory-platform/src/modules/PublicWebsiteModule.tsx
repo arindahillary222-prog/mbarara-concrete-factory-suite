@@ -671,16 +671,20 @@ function ProductCatalogueGallery({
   onSelect: (product: WebsiteProduct) => void;
 }) {
   const images = catalogueImagesForProduct(selected);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const mainImage = images[selectedImageIndex] ?? images[0];
+  const otherImages = images.filter((_, index) => index !== selectedImageIndex);
 
   return (
     <section id="catalogue-gallery" className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">Full product catalogue</p>
-          <h2 className="mt-1 text-3xl font-extrabold text-slate-950">10 catalogue visuals for every product</h2>
+          <h2 className="mt-1 text-3xl font-extrabold text-slate-950">One main product photo, with more views on demand</h2>
           <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
-            Select a product below to view its image set. These catalogue visuals support buyer selection and should be
-            replaced with verified factory photos as each product is manufactured, tested, and released.
+            Select a product below to view one clean display image first, then open the dropdown for the other nine
+            catalogue views. No third-party branded website photos are used here; replace catalogue visuals only with
+            factory-owned or licence-cleared product photos.
           </p>
         </div>
         <div className="inline-flex items-center gap-2 rounded-md bg-slate-100 px-3 py-2 text-sm font-bold text-slate-700">
@@ -694,7 +698,10 @@ function ProductCatalogueGallery({
           <button
             key={product.id}
             type="button"
-            onClick={() => onSelect(product)}
+            onClick={() => {
+              onSelect(product);
+              setSelectedImageIndex(0);
+            }}
             className={`shrink-0 rounded-md border px-3 py-2 text-left text-sm font-bold ${
               selected.id === product.id
                 ? "border-amber-400 bg-amber-50 text-slate-950"
@@ -707,21 +714,71 @@ function ProductCatalogueGallery({
         ))}
       </div>
 
-      <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
-        {images.map((image, index) => (
-          <figure key={image.id} className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
-            <img
-              src={publicAsset(image.src)}
-              alt={image.label}
-              loading="lazy"
-              className="aspect-[4/3] w-full bg-slate-200 object-cover"
-            />
-            <figcaption className="flex items-center justify-between gap-3 px-3 py-3 text-xs font-bold text-slate-600">
-              <span>{selected.code}</span>
-              <span>Photo {index + 1} of {catalogueViewCount}</span>
-            </figcaption>
-          </figure>
-        ))}
+      <div className="mt-5 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+        <figure className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+          <img
+            src={publicAsset(mainImage.src)}
+            alt={mainImage.label}
+            className="aspect-[4/3] w-full bg-slate-200 object-cover"
+          />
+          <figcaption className="flex flex-wrap items-center justify-between gap-3 px-4 py-4 text-sm font-bold text-slate-700">
+            <span>{selected.code} | {selected.name}</span>
+            <span>Photo {selectedImageIndex + 1} of {catalogueViewCount}</span>
+          </figcaption>
+        </figure>
+
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-5">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">Display control</p>
+          <h3 className="mt-1 text-2xl font-extrabold text-slate-950">{selected.name}</h3>
+          <label className="mt-5 grid gap-2 text-sm font-semibold text-slate-700">
+            Choose display photo
+            <select
+              value={selectedImageIndex}
+              onChange={(event) => setSelectedImageIndex(Number(event.target.value))}
+              className="rounded-md border border-slate-300 bg-white px-3 py-3"
+            >
+              {images.map((image, index) => (
+                <option key={image.id} value={index}>
+                  Photo {index + 1} of {catalogueViewCount}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <details className="mt-5 rounded-lg border border-slate-200 bg-white">
+            <summary className="cursor-pointer px-4 py-3 text-sm font-extrabold text-slate-950">
+              See more catalogue photos
+            </summary>
+            <div className="grid gap-3 border-t border-slate-200 p-4 sm:grid-cols-2">
+              {otherImages.map((image) => {
+                const imageIndex = images.findIndex((candidate) => candidate.id === image.id);
+                return (
+                  <button
+                    key={image.id}
+                    type="button"
+                    onClick={() => setSelectedImageIndex(imageIndex)}
+                    className="overflow-hidden rounded-md border border-slate-200 bg-slate-50 text-left hover:border-amber-400"
+                  >
+                    <img
+                      src={publicAsset(image.src)}
+                      alt={image.label}
+                      loading="lazy"
+                      className="aspect-[4/3] w-full bg-slate-200 object-cover"
+                    />
+                    <span className="block px-3 py-2 text-xs font-bold text-slate-600">
+                      Photo {imageIndex + 1} of {catalogueViewCount}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </details>
+
+          <p className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm font-semibold leading-6 text-slate-800">
+            Real buyer-facing photos should come from our factory, our customers with permission, or licensed suppliers.
+            Do not use another company&apos;s branded images as product evidence.
+          </p>
+        </div>
       </div>
     </section>
   );
