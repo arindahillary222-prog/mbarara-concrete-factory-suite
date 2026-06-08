@@ -9,6 +9,7 @@ import {
   ClipboardList,
   CreditCard,
   Filter,
+  Images,
   Mail,
   MapPin,
   MessageCircle,
@@ -83,6 +84,21 @@ const imageByCategory: Record<string, string> = {
   culverts: "/assets/images/product-culverts.jpg",
   "ready-mix concrete": "/assets/images/product-ready-mix.jpg",
 };
+
+const catalogueViewCount = 10;
+
+function slugifyAsset(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
+function catalogueImagesForProduct(product: WebsiteProduct) {
+  const slug = slugifyAsset(product.name);
+  return Array.from({ length: catalogueViewCount }, (_, index) => ({
+    id: `${product.id}-catalogue-${index + 1}`,
+    src: `/assets/catalogue/${slug}-${String(index + 1).padStart(2, "0")}.svg`,
+    label: `${product.name} catalogue view ${index + 1}`,
+  }));
+}
 
 const additionalProducts: WebsiteProduct[] = [
   {
@@ -163,6 +179,7 @@ function PublicHeader() {
         </a>
         <nav className="flex flex-wrap items-center gap-2 text-sm font-bold text-slate-700">
           <a href="#products" className="rounded-md px-3 py-2 hover:bg-slate-100">Products</a>
+          <a href="#catalogue-gallery" className="rounded-md px-3 py-2 hover:bg-slate-100">Catalogue</a>
           <a href="#payments" className="rounded-md px-3 py-2 hover:bg-slate-100">Payments</a>
           <a href="#qr" className="rounded-md px-3 py-2 hover:bg-slate-100">QR Code</a>
           <a href="#founder" className="rounded-md px-3 py-2 hover:bg-slate-100">Founder</a>
@@ -175,7 +192,7 @@ function PublicHeader() {
 
 function toWebsiteProduct(product: Product): WebsiteProduct {
   const isDeferred = product.targetDailyVolume <= 0 || product.confidenceLevel === "Quotation Required";
-  const unit: ProductUnit = product.unit === "linear metre" ? "unit" : product.unit;
+  const unit: ProductUnit = product.unit === "m3" ? "m3" : "unit";
   const weightMap: Record<string, number> = {
     "4-inch hollow blocks": 9,
     "6-inch hollow blocks": 13,
@@ -402,7 +419,11 @@ function MobileMoneyAndQr({ basketTotal, deliveryCost }: { basketTotal: number; 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           <div className="rounded-lg border border-yellow-300 bg-yellow-50 p-5">
             <div className="flex items-center gap-3">
-              <Smartphone className="text-yellow-700" size={28} />
+              <img
+                src={publicAsset("/assets/logos/mtn-mobile-money.svg")}
+                alt="MTN Mobile Money logo"
+                className="h-14 w-28 rounded-md border border-yellow-300 bg-yellow-300 object-contain p-1 shadow-sm"
+              />
               <div>
                 <p className="text-sm font-black uppercase text-slate-950">MTN Mobile Money</p>
                 <p className="text-2xl font-extrabold text-slate-950">{companyProfile.mtnMobileMoney}</p>
@@ -415,7 +436,11 @@ function MobileMoneyAndQr({ basketTotal, deliveryCost }: { basketTotal: number; 
 
           <div className="rounded-lg border border-red-200 bg-red-50 p-5">
             <div className="flex items-center gap-3">
-              <Smartphone className="text-red-700" size={28} />
+              <img
+                src={publicAsset("/assets/logos/airtel-money.svg")}
+                alt="Airtel Money logo"
+                className="h-14 w-28 rounded-md border border-red-200 bg-red-600 object-contain p-1 shadow-sm"
+              />
               <div>
                 <p className="text-sm font-black uppercase text-slate-950">Airtel Money</p>
                 <p className="text-xl font-extrabold text-slate-950">Accepted after confirmation</p>
@@ -463,7 +488,11 @@ function MobileMoneyAndQr({ basketTotal, deliveryCost }: { basketTotal: number; 
             className="mx-auto w-full max-w-xs"
           />
         </div>
-        <p className="mt-4 break-words text-sm font-semibold leading-6 text-slate-300">{companyProfile.publicWebsiteUrl}</p>
+        <p className="mt-4 text-sm font-semibold leading-6 text-slate-300">
+          Scan to open the permanent public website with products, catalogue visuals, inquiry form, Mobile Money details,
+          WhatsApp links, PDF report, and videos.
+        </p>
+        <p className="mt-3 break-words text-sm font-semibold leading-6 text-amber-200">{companyProfile.publicWebsiteUrl}</p>
         <a
           href={companyProfile.publicWebsiteUrl}
           target="_blank"
@@ -632,7 +661,81 @@ function QuantityPlanner({
   );
 }
 
-function ProductCard({ product, onSelect }: { product: WebsiteProduct; onSelect: (product: WebsiteProduct) => void }) {
+function ProductCatalogueGallery({
+  products,
+  selected,
+  onSelect,
+}: {
+  products: WebsiteProduct[];
+  selected: WebsiteProduct;
+  onSelect: (product: WebsiteProduct) => void;
+}) {
+  const images = catalogueImagesForProduct(selected);
+
+  return (
+    <section id="catalogue-gallery" className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">Full product catalogue</p>
+          <h2 className="mt-1 text-3xl font-extrabold text-slate-950">10 catalogue visuals for every product</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
+            Select a product below to view its image set. These catalogue visuals support buyer selection and should be
+            replaced with verified factory photos as each product is manufactured, tested, and released.
+          </p>
+        </div>
+        <div className="inline-flex items-center gap-2 rounded-md bg-slate-100 px-3 py-2 text-sm font-bold text-slate-700">
+          <Images size={17} />
+          {products.length * catalogueViewCount} visuals
+        </div>
+      </div>
+
+      <div className="mt-5 flex gap-2 overflow-x-auto pb-2">
+        {products.map((product) => (
+          <button
+            key={product.id}
+            type="button"
+            onClick={() => onSelect(product)}
+            className={`shrink-0 rounded-md border px-3 py-2 text-left text-sm font-bold ${
+              selected.id === product.id
+                ? "border-amber-400 bg-amber-50 text-slate-950"
+                : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+            }`}
+          >
+            <span className="block text-xs uppercase text-slate-500">{product.code}</span>
+            {product.name}
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
+        {images.map((image, index) => (
+          <figure key={image.id} className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+            <img
+              src={publicAsset(image.src)}
+              alt={image.label}
+              loading="lazy"
+              className="aspect-[4/3] w-full bg-slate-200 object-cover"
+            />
+            <figcaption className="flex items-center justify-between gap-3 px-3 py-3 text-xs font-bold text-slate-600">
+              <span>{selected.code}</span>
+              <span>Photo {index + 1} of {catalogueViewCount}</span>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ProductCard({
+  product,
+  onSelect,
+  onViewGallery,
+}: {
+  product: WebsiteProduct;
+  onSelect: (product: WebsiteProduct) => void;
+  onViewGallery: (product: WebsiteProduct) => void;
+}) {
   const locked = product.availableStock === 0 || product.curingStatus !== "Released for Sale" || product.approvalState !== "Internal Pass";
 
   return (
@@ -665,14 +768,27 @@ function ProductCard({ product, onSelect }: { product: WebsiteProduct; onSelect:
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Ex-works price</p>
             <p className="text-xl font-extrabold text-slate-950">{formatUgx.format(product.priceUgx)}</p>
           </div>
-          <button
-            type="button"
-            onClick={() => onSelect(product)}
-            className="inline-flex items-center gap-2 rounded-md bg-amber-400 px-4 py-3 text-sm font-extrabold text-slate-950 hover:bg-amber-300"
-          >
-            Configure
-            <ArrowRight size={17} />
-          </button>
+          <div className="grid gap-2">
+            <button
+              type="button"
+              onClick={() => onSelect(product)}
+              className="inline-flex items-center justify-center gap-2 rounded-md bg-amber-400 px-4 py-3 text-sm font-extrabold text-slate-950 hover:bg-amber-300"
+            >
+              Configure
+              <ArrowRight size={17} />
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                onViewGallery(product);
+                document.getElementById("catalogue-gallery")?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+              className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50"
+            >
+              <Images size={17} />
+              Photos
+            </button>
+          </div>
         </div>
       </div>
     </article>
@@ -690,6 +806,7 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
   const [unit, setUnit] = useState<"all" | ProductUnit>("all");
   const [availability, setAvailability] = useState<"all" | "available" | "quote">("all");
   const [selectedProduct, setSelectedProduct] = useState<WebsiteProduct>(products[0]);
+  const [galleryProduct, setGalleryProduct] = useState<WebsiteProduct>(products[0]);
   const [basket, setBasket] = useState<BasketItem[]>([]);
   const [paymentMode, setPaymentMode] = useState<"direct" | "credit">("direct");
   const [inquirySent, setInquirySent] = useState(false);
@@ -790,7 +907,7 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
               </div>
             </div>
 
-            <div className="mt-5 grid gap-3 md:grid-cols-4">
+            <div className="mt-5 grid gap-3 md:grid-cols-5">
               <label className="grid gap-2 text-sm font-semibold text-slate-700 md:col-span-2">
                 Search product
                 <input
@@ -826,14 +943,34 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
                   <option value="quote">Quotation required</option>
                 </select>
               </label>
+              <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                Unit
+                <select
+                  value={unit}
+                  onChange={(event) => setUnit(event.target.value as "all" | ProductUnit)}
+                  className="rounded-md border border-slate-300 px-3 py-3"
+                >
+                  <option value="all">All units</option>
+                  <option value="unit">Unit</option>
+                  <option value="m2">m2</option>
+                  <option value="m3">m3</option>
+                </select>
+              </label>
             </div>
           </div>
 
           <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
             {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} onSelect={setSelectedProduct} />
+              <ProductCard
+                key={product.id}
+                product={product}
+                onSelect={setSelectedProduct}
+                onViewGallery={setGalleryProduct}
+              />
             ))}
           </div>
+
+          <ProductCatalogueGallery products={products} selected={galleryProduct} onSelect={setGalleryProduct} />
 
           <QuantityPlanner
             selected={selectedProduct}
