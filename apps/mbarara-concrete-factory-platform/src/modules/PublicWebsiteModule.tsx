@@ -846,7 +846,7 @@ function ProductCatalogueGallery({
           <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
             Select a product below to view one clean display image first, then open the dropdown for the other nine
             catalogue views. No third-party branded website photos are used here; replace catalogue visuals only with
-            factory-owned or licence-cleared product photos.
+            factory-owned, licence-cleared, product-only, factory-only, or company-approved local team photos.
           </p>
         </div>
         <div className="inline-flex items-center gap-2 rounded-md bg-slate-100 px-3 py-2 text-sm font-bold text-slate-700">

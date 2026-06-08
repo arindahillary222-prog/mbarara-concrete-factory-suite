@@ -4,6 +4,8 @@ Place real, owned, licensed, or permission-cleared product photos in this folder
 
 Do not use another company website screenshot as a product photo. The iConic/Indiamart web-result screenshot supplied in chat is treated as a market reference only and is not used in the public catalogue.
 
+People imagery rule: keep the public website focused on product-only and factory-only imagery. If a person must appear, use only the Founder/Managing Director portrait or approved local company team/customer photos. Do not add unrelated foreign stock portraits to the website or catalogue.
+
 ## Required Hero Image
 
 - `public/assets/images/mbarara-factory-yard.png`  
