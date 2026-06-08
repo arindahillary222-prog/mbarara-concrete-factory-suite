@@ -51,6 +51,15 @@ interface BasketItem {
   concreteClass?: string;
 }
 
+interface CatalogueImage {
+  id: string;
+  src: string;
+  fallbackSrc?: string;
+  label: string;
+  sourceStatus: "Uploaded product photo" | "Awaiting upload" | "Catalogue fallback";
+  matchNote?: string;
+}
+
 const formatUgx = new Intl.NumberFormat("en-UG", {
   style: "currency",
   currency: "UGX",
@@ -91,13 +100,123 @@ function slugifyAsset(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
-function catalogueImagesForProduct(product: WebsiteProduct) {
+const uploadedCataloguePhotoSlots: Record<string, Array<Omit<CatalogueImage, "id" | "fallbackSrc" | "sourceStatus">>> = {
+  "60 mm pavers": [
+    {
+      src: "/assets/catalogue/user/cassablanca-smart-paver-light-grey-sku116.jpg",
+      label: "Cassablanca Smart Paver (260x110x60mm) - Light Grey (29M2) SKU116",
+      matchNote: "Matched to 60 mm pavers because the supplied title specifies a 60mm smart paver.",
+    },
+  ],
+  "ready-mix concrete": [
+    {
+      src: "/assets/catalogue/user/ready-mix-concrete-mixer-truck.jpg",
+      label: "Ready-Mixed Concrete and Concrete Mixer Truck",
+      matchNote: "Matched to ready-mix concrete because the photo shows a concrete mixer truck and the title names ready-mixed concrete.",
+    },
+  ],
+  "4-inch hollow blocks": [
+    {
+      src: "/assets/catalogue/user/hollow-concrete-blocks-4-inch-stack.jpg",
+      label: "Hollow Concrete Blocks 4 Inches (10x20x40cm / 100x200x400mm)",
+      matchNote: "Matched to 4-inch hollow blocks because the supplied title names 4 inches / 100mm blocks.",
+    },
+    {
+      src: "/assets/catalogue/user/hollow-concrete-blocks-4-inch-single.jpg",
+      label: "Hollow Concrete Blocks 4 Inches (10cm / 100mm) - Single Block View",
+      matchNote: "Matched to 4-inch hollow blocks because the supplied title names 4 inches / 100mm blocks.",
+    },
+  ],
+  culverts: [
+    {
+      src: "/assets/catalogue/user/concrete-culvert.jpg",
+      label: "Concrete Culvert",
+      matchNote: "Matched to culverts because the supplied title names Concrete Culvert.",
+    },
+  ],
+  "double-T pavers": [
+    {
+      src: "/assets/catalogue/user/double-t-smart-paver-coral-red-sku139.jpg",
+      label: "Double T Smart Paver (220x120x60mm) - Coral Red (31 Pcs/M2) SKU139",
+      matchNote: "Matched to double-T pavers because the supplied title names Double T Smart Paver.",
+    },
+    {
+      src: "/assets/catalogue/user/double-t-smart-paver-light-grey-sku117.jpg",
+      label: "Double T Smart Paver (220x120x60mm) - Light Grey (31 Pcs/M2) SKU117",
+      matchNote: "Matched to double-T pavers because the supplied title names Double T Smart Paver.",
+    },
+  ],
+  "drainage channels": [
+    {
+      src: "/assets/catalogue/user/precast-concrete-drainage-channels-slot-drainage.jpg",
+      label: "Precast Concrete Drainage Channels - Slot Drainage",
+      matchNote: "Matched to drainage channels because the supplied title names precast concrete drainage channels.",
+    },
+  ],
+  "grass/permeable pavers": [
+    {
+      src: "/assets/catalogue/user/grass-block-pavers-light-grey-sku062.jpg",
+      label: "Grass Block Pavers (400x200x60mm) - Light Grey (13 Pcs/M2) SKU062",
+      matchNote: "Matched to grass/permeable pavers because the supplied title names grass block pavers.",
+    },
+  ],
+};
+
+function generatedCatalogueImage(product: WebsiteProduct, index: number): CatalogueImage {
   const slug = slugifyAsset(product.name);
-  return Array.from({ length: catalogueViewCount }, (_, index) => ({
+  return {
     id: `${product.id}-catalogue-${index + 1}`,
     src: `/assets/catalogue/${slug}-${String(index + 1).padStart(2, "0")}.svg`,
     label: `${product.name} catalogue view ${index + 1}`,
-  }));
+    sourceStatus: "Catalogue fallback",
+  };
+}
+
+function catalogueImagesForProduct(product: WebsiteProduct): CatalogueImage[] {
+  const generated = Array.from({ length: catalogueViewCount }, (_, index) => generatedCatalogueImage(product, index));
+  const uploadedSlots = uploadedCataloguePhotoSlots[product.name] ?? [];
+
+  uploadedSlots.forEach((slot, index) => {
+    if (index >= generated.length) return;
+    generated[index] = {
+      ...slot,
+      id: `${product.id}-uploaded-photo-${index + 1}`,
+      fallbackSrc: generated[index].src,
+      sourceStatus: "Awaiting upload",
+    };
+  });
+
+  return generated;
+}
+
+function FallbackImage({
+  src,
+  fallbackSrc,
+  alt,
+  className,
+  loading,
+}: {
+  src: string;
+  fallbackSrc?: string;
+  alt: string;
+  className: string;
+  loading?: "lazy" | "eager";
+}) {
+  return (
+    <img
+      src={publicAsset(src)}
+      alt={alt}
+      loading={loading}
+      className={className}
+      onError={(event) => {
+        if (!fallbackSrc) return;
+        const fallback = publicAsset(fallbackSrc);
+        if (event.currentTarget.src !== fallback) {
+          event.currentTarget.src = fallback;
+        }
+      }}
+    />
+  );
 }
 
 const additionalProducts: WebsiteProduct[] = [
@@ -229,6 +348,62 @@ function toWebsiteProduct(product: Product): WebsiteProduct {
   };
 }
 
+function buildWhatsAppCheckoutPayload({
+  items,
+  total,
+  totalWeight,
+  deliveryThresholdKg,
+}: {
+  items: BasketItem[];
+  total: number;
+  totalWeight: number;
+  deliveryThresholdKg: number;
+}) {
+  const deliveryStatus =
+    totalWeight >= deliveryThresholdKg
+      ? "Free Factory Tipper Delivery bracket unlocked, subject to final radius and truck availability."
+      : `Below free delivery bracket. Approx. ${((deliveryThresholdKg - totalWeight) / 1000).toFixed(2)} more tonnes needed.`;
+
+  const productLines =
+    items.length > 0
+      ? items.map((item, index) => {
+          const lineTotal = item.quantity * item.product.priceUgx;
+          const lineWeight = item.quantity * item.product.weightKgPerUnit;
+          return [
+            `${index + 1}. ${item.product.code} - ${item.product.name}`,
+            `   Quantity: ${item.quantity} ${item.product.unit}${item.concreteClass ? ` (${item.concreteClass})` : ""}`,
+            `   Unit price: ${formatUgx.format(item.product.priceUgx)}`,
+            `   Line total: ${formatUgx.format(lineTotal)}`,
+            `   Estimated weight: ${(lineWeight / 1000).toFixed(2)} tonnes`,
+          ].join("\n");
+        })
+      : ["No products selected yet."];
+
+  return [
+    `Hello ${companyProfile.name}, I would like to request a quotation/order from the website cart.`,
+    "",
+    "WHATSAPP CHECKOUT PAYLOAD",
+    `Currency: UGX only`,
+    `Customer name/company:`,
+    `Project location:`,
+    `Preferred delivery date:`,
+    "",
+    "Cart items:",
+    ...productLines,
+    "",
+    `Estimated product total: ${formatUgx.format(total)}`,
+    `Estimated basket weight: ${(totalWeight / 1000).toFixed(2)} tonnes`,
+    `Delivery status: ${deliveryStatus}`,
+    "",
+    "Payment route requested:",
+    `- MTN Mobile Money: ${companyProfile.mtnMobileMoney}`,
+    "- Airtel Money: accepted after final order confirmation",
+    "- Do not send money until stock, delivery radius, and invoice total are confirmed.",
+    "",
+    "Please confirm availability, curing/QC release status, delivery cost if any, final invoice amount, and payment instructions.",
+  ].join("\n");
+}
+
 function BasketSummary({ items }: { items: BasketItem[] }) {
   const total = items.reduce((sum, item) => sum + item.quantity * item.product.priceUgx, 0);
   const totalWeight = items.reduce((sum, item) => sum + item.quantity * item.product.weightKgPerUnit, 0);
@@ -242,22 +417,8 @@ function BasketSummary({ items }: { items: BasketItem[] }) {
         ? "Free factory tipper delivery bracket unlocked."
         : "Build basket weight to unlock free site delivery.";
 
-  const orderText = encodeURIComponent(
-    [
-      `Hello ${companyProfile.name}, I would like to request a quotation/order.`,
-      "",
-      ...items.map(
-        (item) =>
-          `${item.product.code} - ${item.product.name}: ${item.quantity} ${item.product.unit} at ${formatUgx.format(
-            item.product.priceUgx,
-          )}`,
-      ),
-      "",
-      `Estimated total: ${formatUgx.format(total)}`,
-      `Estimated weight: ${(totalWeight / 1000).toFixed(2)} tonnes`,
-      "Please confirm availability, delivery date, and payment terms.",
-    ].join("\n"),
-  );
+  const checkoutPayload = buildWhatsAppCheckoutPayload({ items, total, totalWeight, deliveryThresholdKg });
+  const orderText = encodeURIComponent(checkoutPayload);
 
   return (
     <aside className="sticky top-4 rounded-lg border border-slate-800 bg-slate-950 p-5 text-white shadow-xl">
@@ -323,6 +484,7 @@ function BasketSummary({ items }: { items: BasketItem[] }) {
       <div className="mt-5 grid gap-2">
         <a
           href={`${contactLinks.whatsappUganda}?text=${orderText}`}
+          data-checkout-payload={checkoutPayload}
           target="_blank"
           rel="noreferrer"
           className="inline-flex items-center justify-center gap-2 rounded-md bg-amber-400 px-4 py-3 text-sm font-extrabold text-slate-950 hover:bg-amber-300"
@@ -716,15 +878,21 @@ function ProductCatalogueGallery({
 
       <div className="mt-5 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
         <figure className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
-          <img
-            src={publicAsset(mainImage.src)}
+          <FallbackImage
+            src={mainImage.src}
+            fallbackSrc={mainImage.fallbackSrc}
             alt={mainImage.label}
             className="aspect-[4/3] w-full bg-slate-200 object-cover"
           />
           <figcaption className="flex flex-wrap items-center justify-between gap-3 px-4 py-4 text-sm font-bold text-slate-700">
-            <span>{selected.code} | {selected.name}</span>
+            <span>{mainImage.label}</span>
             <span>Photo {selectedImageIndex + 1} of {catalogueViewCount}</span>
           </figcaption>
+          {mainImage.matchNote ? (
+            <p className="border-t border-slate-200 px-4 py-3 text-sm font-semibold leading-6 text-slate-600">
+              {mainImage.matchNote}
+            </p>
+          ) : null}
         </figure>
 
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-5">
@@ -739,7 +907,7 @@ function ProductCatalogueGallery({
             >
               {images.map((image, index) => (
                 <option key={image.id} value={index}>
-                  Photo {index + 1} of {catalogueViewCount}
+                  Photo {index + 1}: {image.label}
                 </option>
               ))}
             </select>
@@ -759,14 +927,15 @@ function ProductCatalogueGallery({
                     onClick={() => setSelectedImageIndex(imageIndex)}
                     className="overflow-hidden rounded-md border border-slate-200 bg-slate-50 text-left hover:border-amber-400"
                   >
-                    <img
-                      src={publicAsset(image.src)}
+                    <FallbackImage
+                      src={image.src}
+                      fallbackSrc={image.fallbackSrc}
                       alt={image.label}
                       loading="lazy"
                       className="aspect-[4/3] w-full bg-slate-200 object-cover"
                     />
-                    <span className="block px-3 py-2 text-xs font-bold text-slate-600">
-                      Photo {imageIndex + 1} of {catalogueViewCount}
+                    <span className="block px-3 py-2 text-xs font-bold leading-5 text-slate-600">
+                      Photo {imageIndex + 1}: {image.label}
                     </span>
                   </button>
                 );
@@ -798,7 +967,12 @@ function ProductCard({
   return (
     <article className="group relative overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
       <div className="relative aspect-[4/3] overflow-hidden bg-slate-200">
-        <img src={publicAsset(product.image)} alt={`${product.name} product visual`} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+        <FallbackImage
+          src={product.image}
+          fallbackSrc="/assets/images/product-blocks.jpg"
+          alt={`${product.name} product visual`}
+          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+        />
         <div className="absolute left-3 top-3 rounded-md bg-slate-950 px-3 py-2 text-xs font-extrabold text-amber-300">
           {product.code}
         </div>
@@ -938,8 +1112,9 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
             </div>
           </div>
           <div className="relative min-h-[420px]">
-            <img
-              src={publicAsset("/assets/images/factory-hero.jpg")}
+            <FallbackImage
+              src="/assets/images/mbarara-factory-yard.png"
+              fallbackSrc="/assets/images/factory-hero.jpg"
               alt="Concrete products yard with truck and block stacks"
               className="absolute inset-0 h-full w-full object-cover"
             />
