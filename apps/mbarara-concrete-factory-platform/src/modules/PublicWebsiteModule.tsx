@@ -86,12 +86,12 @@ const productCodes: Record<string, string> = {
 };
 
 const imageByCategory: Record<string, string> = {
-  blocks: "/assets/images/product-blocks.jpg",
-  pavers: "/assets/images/product-pavers.jpg",
-  kerbstones: "/assets/images/product-kerbstones.jpg",
-  "drainage channels": "/assets/images/product-drainage.jpg",
-  culverts: "/assets/images/product-culverts.jpg",
-  "ready-mix concrete": "/assets/images/product-ready-mix.jpg",
+  blocks: "/assets/images/product-blocks.png",
+  pavers: "/assets/images/product-pavers.png",
+  kerbstones: "/assets/images/product-kerbstones.png",
+  "drainage channels": "/assets/images/product-drainage.png",
+  culverts: "/assets/images/product-culverts.png",
+  "ready-mix concrete": "/assets/images/product-ready-mix.png",
 };
 
 const catalogueViewCount = 10;
@@ -103,61 +103,61 @@ function slugifyAsset(value: string) {
 const uploadedCataloguePhotoSlots: Record<string, Array<Omit<CatalogueImage, "id" | "fallbackSrc" | "sourceStatus">>> = {
   "60 mm pavers": [
     {
-      src: "/assets/catalogue/user/cassablanca-smart-paver-light-grey-sku116.jpg",
+      src: "/assets/catalogue/60-mm-pavers-01.png",
       label: "Cassablanca Smart Paver (260x110x60mm) - Light Grey (29M2) SKU116",
-      matchNote: "Matched to 60 mm pavers because the supplied title specifies a 60mm smart paver.",
+      matchNote: "Matched to 60 mm pavers because the supplied title specifies a 60mm smart paver. Showing a clean generated category image until the exact owned photo file is added.",
     },
   ],
   "ready-mix concrete": [
     {
-      src: "/assets/catalogue/user/ready-mix-concrete-mixer-truck.jpg",
+      src: "/assets/catalogue/ready-mix-concrete-01.png",
       label: "Ready-Mixed Concrete and Concrete Mixer Truck",
-      matchNote: "Matched to ready-mix concrete because the photo shows a concrete mixer truck and the title names ready-mixed concrete.",
+      matchNote: "Matched to ready-mix concrete because the title names ready-mixed concrete. Showing a clean generated category image until the exact owned photo file is added.",
     },
   ],
   "4-inch hollow blocks": [
     {
-      src: "/assets/catalogue/user/hollow-concrete-blocks-4-inch-stack.jpg",
+      src: "/assets/catalogue/4-inch-hollow-blocks-01.png",
       label: "Hollow Concrete Blocks 4 Inches (10x20x40cm / 100x200x400mm)",
-      matchNote: "Matched to 4-inch hollow blocks because the supplied title names 4 inches / 100mm blocks.",
+      matchNote: "Matched to 4-inch hollow blocks because the supplied title names 4 inches / 100mm blocks. Showing a clean generated category image until the exact owned photo file is added.",
     },
     {
-      src: "/assets/catalogue/user/hollow-concrete-blocks-4-inch-single.jpg",
+      src: "/assets/catalogue/4-inch-hollow-blocks-02.png",
       label: "Hollow Concrete Blocks 4 Inches (10cm / 100mm) - Single Block View",
-      matchNote: "Matched to 4-inch hollow blocks because the supplied title names 4 inches / 100mm blocks.",
+      matchNote: "Matched to 4-inch hollow blocks because the supplied title names 4 inches / 100mm blocks. Showing a clean generated category image until the exact owned photo file is added.",
     },
   ],
   culverts: [
     {
-      src: "/assets/catalogue/user/concrete-culvert.jpg",
+      src: "/assets/catalogue/culverts-01.png",
       label: "Concrete Culvert",
-      matchNote: "Matched to culverts because the supplied title names Concrete Culvert.",
+      matchNote: "Matched to culverts because the supplied title names Concrete Culvert. Showing a clean generated category image until the exact owned photo file is added.",
     },
   ],
   "double-T pavers": [
     {
-      src: "/assets/catalogue/user/double-t-smart-paver-coral-red-sku139.jpg",
+      src: "/assets/catalogue/double-t-pavers-01.png",
       label: "Double T Smart Paver (220x120x60mm) - Coral Red (31 Pcs/M2) SKU139",
-      matchNote: "Matched to double-T pavers because the supplied title names Double T Smart Paver.",
+      matchNote: "Matched to double-T pavers because the supplied title names Double T Smart Paver. Showing a clean generated category image until the exact owned photo file is added.",
     },
     {
-      src: "/assets/catalogue/user/double-t-smart-paver-light-grey-sku117.jpg",
+      src: "/assets/catalogue/double-t-pavers-02.png",
       label: "Double T Smart Paver (220x120x60mm) - Light Grey (31 Pcs/M2) SKU117",
-      matchNote: "Matched to double-T pavers because the supplied title names Double T Smart Paver.",
+      matchNote: "Matched to double-T pavers because the supplied title names Double T Smart Paver. Showing a clean generated category image until the exact owned photo file is added.",
     },
   ],
   "drainage channels": [
     {
-      src: "/assets/catalogue/user/precast-concrete-drainage-channels-slot-drainage.jpg",
+      src: "/assets/catalogue/drainage-channels-01.png",
       label: "Precast Concrete Drainage Channels - Slot Drainage",
-      matchNote: "Matched to drainage channels because the supplied title names precast concrete drainage channels.",
+      matchNote: "Matched to drainage channels because the supplied title names precast concrete drainage channels. Showing a clean generated category image until the exact owned photo file is added.",
     },
   ],
   "grass/permeable pavers": [
     {
-      src: "/assets/catalogue/user/grass-block-pavers-light-grey-sku062.jpg",
+      src: "/assets/catalogue/grass-permeable-pavers-01.png",
       label: "Grass Block Pavers (400x200x60mm) - Light Grey (13 Pcs/M2) SKU062",
-      matchNote: "Matched to grass/permeable pavers because the supplied title names grass block pavers.",
+      matchNote: "Matched to grass/permeable pavers because the supplied title names grass block pavers. Showing a clean generated category image until the exact owned photo file is added.",
     },
   ],
 };
@@ -166,7 +166,7 @@ function generatedCatalogueImage(product: WebsiteProduct, index: number): Catalo
   const slug = slugifyAsset(product.name);
   return {
     id: `${product.id}-catalogue-${index + 1}`,
-    src: `/assets/catalogue/${slug}-${String(index + 1).padStart(2, "0")}.svg`,
+    src: `/assets/catalogue/${slug}-${String(index + 1).padStart(2, "0")}.png`,
     label: `${product.name} catalogue view ${index + 1}`,
     sourceStatus: "Catalogue fallback",
   };
@@ -228,7 +228,7 @@ const additionalProducts: WebsiteProduct[] = [
     unit: "m2",
     priceUgx: 65000,
     description: "Interlocking surface system for compounds, walkways, hotels, schools, fuel stations, and estate access lanes.",
-    image: "/assets/images/product-pavers.jpg",
+    image: "/assets/images/product-pavers.png",
     availableStock: 420,
     curingStatus: "Released for Sale",
     approvalState: "Internal Pass",
@@ -243,7 +243,7 @@ const additionalProducts: WebsiteProduct[] = [
     unit: "m2",
     priceUgx: 70000,
     description: "Heavy interlock paving format for high-traffic construction projects and commercial yards.",
-    image: "/assets/images/product-pavers.jpg",
+    image: "/assets/images/product-pavers.png",
     availableStock: 300,
     curingStatus: "Released for Sale",
     approvalState: "Internal Pass",
@@ -258,7 +258,7 @@ const additionalProducts: WebsiteProduct[] = [
     unit: "m2",
     priceUgx: 68000,
     description: "Premium decorative paving format for landscape edges, hospitality, residential, and institutional projects.",
-    image: "/assets/images/product-pavers.jpg",
+    image: "/assets/images/product-pavers.png",
     availableStock: 240,
     curingStatus: "Released for Sale",
     approvalState: "Internal Pass",
@@ -339,7 +339,7 @@ function toWebsiteProduct(product: Product): WebsiteProduct {
     image:
       imageByCategory[product.name] ??
       imageByCategory[product.category] ??
-      "/assets/images/product-blocks.jpg",
+      "/assets/images/product-blocks.png",
     availableStock: isDeferred ? 0 : Math.max(product.targetDailyVolume * 8, 120),
     curingStatus: isDeferred ? "Quotation Required" : "Released for Sale",
     approvalState: isDeferred ? "Quotation Required" : "Internal Pass",
@@ -579,36 +579,40 @@ function MobileMoneyAndQr({ basketTotal, deliveryCost }: { basketTotal: number; 
         </div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
-          <div className="rounded-lg border border-yellow-300 bg-yellow-50 p-5">
-            <div className="flex items-center gap-3">
+          <div className="overflow-hidden rounded-xl border-2 border-[#ffcc00] bg-[#fff8d6] shadow-sm">
+            <div className="bg-[#ffcc00] px-5 py-3">
               <img
                 src={publicAsset("/assets/logos/mtn-mobile-money.svg")}
                 alt="MTN Mobile Money logo"
-                className="h-14 w-28 rounded-md border border-yellow-300 bg-yellow-300 object-contain p-1 shadow-sm"
+                className="h-20 w-full object-contain"
               />
-              <div>
-                <p className="text-sm font-black uppercase text-slate-950">MTN Mobile Money</p>
-                <p className="text-2xl font-extrabold text-slate-950">{companyProfile.mtnMobileMoney}</p>
-              </div>
             </div>
-            <p className="mt-4 text-sm font-semibold leading-6 text-slate-700">
-              Use this number only after the factory confirms product availability, delivery date, and final invoice amount.
-            </p>
+            <div className="p-5">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-600">Payment receiving number</p>
+                <p className="mt-1 text-3xl font-extrabold text-slate-950">{companyProfile.mtnMobileMoney}</p>
+              </div>
+              <p className="mt-4 text-sm font-semibold leading-6 text-slate-700">
+                Use this number only after the factory confirms product availability, delivery date, and final invoice amount.
+              </p>
+            </div>
           </div>
 
-          <div className="rounded-lg border border-red-200 bg-red-50 p-5">
-            <div className="flex items-center gap-3">
+          <div className="overflow-hidden rounded-xl border-2 border-[#e60000] bg-red-50 shadow-sm">
+            <div className="bg-[#e60000] px-5 py-3">
               <img
                 src={publicAsset("/assets/logos/airtel-money.svg")}
                 alt="Airtel Money logo"
-                className="h-14 w-28 rounded-md border border-red-200 bg-red-600 object-contain p-1 shadow-sm"
+                className="h-20 w-full object-contain"
               />
-              <div>
-                <p className="text-sm font-black uppercase text-slate-950">Airtel Money</p>
-                <p className="text-xl font-extrabold text-slate-950">Accepted after confirmation</p>
-              </div>
             </div>
-            <p className="mt-4 text-sm font-semibold leading-6 text-slate-700">{companyProfile.airtelMoneyNote}</p>
+            <div className="p-5">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-600">Airtel payment route</p>
+                <p className="mt-1 text-2xl font-extrabold text-slate-950">Accepted after confirmation</p>
+              </div>
+              <p className="mt-4 text-sm font-semibold leading-6 text-slate-700">{companyProfile.airtelMoneyNote}</p>
+            </div>
           </div>
         </div>
 
@@ -969,7 +973,7 @@ function ProductCard({
       <div className="relative aspect-[4/3] overflow-hidden bg-slate-200">
         <FallbackImage
           src={product.image}
-          fallbackSrc="/assets/images/product-blocks.jpg"
+          fallbackSrc="/assets/images/product-blocks.png"
           alt={`${product.name} product visual`}
           className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
         />

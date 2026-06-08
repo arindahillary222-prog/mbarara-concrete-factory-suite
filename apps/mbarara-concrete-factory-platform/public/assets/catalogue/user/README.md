@@ -2,6 +2,8 @@
 
 Place real, owned, licensed, or permission-cleared product photos in this folder using the exact filenames below.
 
+The live website currently includes generated product-only PNG catalogue images for every product so the public catalogue never appears empty. When the exact owned WhatsApp/product photos are available as real files on the laptop, replace the generated category image paths in `src/modules/PublicWebsiteModule.tsx` with the relevant files from this folder.
+
 Do not use another company website screenshot as a product photo. The iConic/Indiamart web-result screenshot supplied in chat is treated as a market reference only and is not used in the public catalogue.
 
 People imagery rule: keep the public website focused on product-only and factory-only imagery. If a person must appear, use only the Founder/Managing Director portrait or approved local company team/customer photos. Do not add unrelated foreign stock portraits to the website or catalogue.
