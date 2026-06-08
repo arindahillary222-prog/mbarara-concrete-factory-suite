@@ -1,0 +1,23 @@
+node_modules/
+dist/
+.netlify/
+.venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+
+.env
+.env.*
+!.env.example
+.postgres-local-passwords.env
+
+*.log
+*.tsbuildinfo
+*.sqlite
+*.db
+
+# Local runtime/database downloads are intentionally not versioned.
+work/
+postgresql-portable/
+postgresql-data/
+*.zip

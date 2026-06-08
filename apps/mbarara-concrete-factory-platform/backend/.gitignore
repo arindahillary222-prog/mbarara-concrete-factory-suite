@@ -1,0 +1,5 @@
+.env
+.postgres-local-passwords.env
+.venv/
+*.log
+

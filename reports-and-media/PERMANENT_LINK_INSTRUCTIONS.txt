@@ -1,0 +1,26 @@
+Mbarara Integrated Concrete Products Factory - Permanent Public Link Instructions
+
+Do not use the loca.lt link for sharing. That link is only a temporary tunnel from the laptop and can stop at any time.
+
+Use this folder for the website upload:
+outputs/netlify-permanent-site
+
+The ZIP file is only a transfer or backup copy:
+outputs/Mbarara_Concrete_Factory_Netlify_Upload.zip
+
+Simple upload steps:
+1. Open https://app.netlify.com/drop
+2. Sign in or create a Netlify account.
+3. Drag and drop the netlify-permanent-site folder onto the upload area.
+4. Wait for Netlify to publish the site.
+5. Copy the final .netlify.app link and share that link with colleagues in Uganda, Germany, or anywhere else.
+
+If you move the ZIP to another computer, unzip it first, then upload the extracted folder.
+
+The uploaded site contains:
+- React dashboard for the UGX 130,000,000 Phase 1 model
+- Master PDF report download
+- US English 30-minute explainer video download
+- US English walkthrough video download
+
+After upload, test from phone mobile data, not only laptop Wi-Fi.
