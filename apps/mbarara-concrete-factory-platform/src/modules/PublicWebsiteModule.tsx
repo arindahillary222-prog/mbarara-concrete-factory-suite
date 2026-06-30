@@ -273,9 +273,9 @@ function publicAsset(path: string) {
 
 function GlobalDeliveryBanner() {
   return (
-    <div className="bg-amber-500 text-slate-950 font-bold text-center py-2 text-sm tracking-wide shadow-md flex justify-center items-center gap-2 px-4">
+    <div className="flex w-full max-w-full items-center justify-center gap-2 bg-amber-500 px-3 py-2 text-center text-sm font-bold tracking-wide text-slate-950 shadow-md sm:px-4">
       <span aria-hidden="true">🚚</span>
-      <span>
+      <span className="min-w-0 text-balance leading-5">
         FREE SITE DELIVERY | Complimentary Fleet Transportation Directly To Your Construction Site Across the Mbarara Region
         (On Qualifying Bulk Orders).
       </span>
@@ -285,18 +285,20 @@ function GlobalDeliveryBanner() {
 
 function PublicHeader() {
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
-      <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-4 px-4 py-4 lg:px-6">
-        <a href="#" className="flex items-center gap-3">
-          <span className="grid h-11 w-11 place-items-center rounded-md bg-slate-950 text-amber-400">
+    <header className="sticky top-0 z-40 w-full max-w-full border-b border-slate-200 bg-white/95 backdrop-blur">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-3 py-4 sm:px-4 lg:px-6">
+        <a href="#" className="flex min-w-0 flex-1 items-center gap-3 sm:flex-none">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-md bg-slate-950 text-amber-400">
             <Building2 size={24} />
           </span>
-          <span>
-            <span className="block text-base font-extrabold text-slate-950">{companyProfile.name}</span>
-            <span className="block text-xs font-bold uppercase tracking-[0.14em] text-amber-600">Factory-direct concrete supply</span>
+          <span className="min-w-0">
+            <span className="block break-words text-base font-extrabold leading-snug text-slate-950">{companyProfile.name}</span>
+            <span className="block break-words text-xs font-bold uppercase tracking-[0.12em] text-amber-600">
+              Factory-direct concrete supply
+            </span>
           </span>
         </a>
-        <nav className="flex flex-wrap items-center gap-2 text-sm font-bold text-slate-700">
+        <nav className="touch-scroll flex max-w-full flex-wrap items-center justify-start gap-2 overflow-x-auto pb-1 text-sm font-bold text-slate-700 sm:justify-end">
           <a href="#products" className="rounded-md px-3 py-2 hover:bg-slate-100">Products</a>
           <a href="#catalogue-gallery" className="rounded-md px-3 py-2 hover:bg-slate-100">Catalogue</a>
           <a href="#payments" className="rounded-md px-3 py-2 hover:bg-slate-100">Payments</a>
@@ -421,11 +423,11 @@ function BasketSummary({ items }: { items: BasketItem[] }) {
   const orderText = encodeURIComponent(checkoutPayload);
 
   return (
-    <aside className="sticky top-4 rounded-lg border border-slate-800 bg-slate-950 p-5 text-white shadow-xl">
+    <aside className="sticky top-4 w-full max-w-full rounded-lg border border-slate-800 bg-slate-950 p-5 text-white shadow-xl">
       <div className="flex items-center justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-400">Live Basket</p>
-          <h3 className="mt-1 text-xl font-extrabold">Quote & Delivery Planner</h3>
+          <h3 className="mt-1 break-words text-xl font-extrabold">Quote & Delivery Planner</h3>
         </div>
         <ShoppingCart className="text-amber-400" size={28} />
       </div>
@@ -439,14 +441,14 @@ function BasketSummary({ items }: { items: BasketItem[] }) {
           items.map((item) => (
             <div key={`${item.product.id}-${item.concreteClass ?? "standard"}`} className="rounded-md bg-white/8 p-3">
               <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-sm font-bold">{item.product.name}</p>
+                <div className="min-w-0">
+                  <p className="break-words text-sm font-bold">{item.product.name}</p>
                   <p className="text-xs text-slate-300">
                     {item.quantity} {item.product.unit}
                     {item.concreteClass ? ` | ${item.concreteClass}` : ""}
                   </p>
                 </div>
-                <p className="text-sm font-bold text-amber-300">
+                <p className="shrink-0 text-right text-sm font-bold text-amber-300">
                   {formatUgx.format(item.quantity * item.product.priceUgx)}
                 </p>
               </div>
@@ -470,10 +472,10 @@ function BasketSummary({ items }: { items: BasketItem[] }) {
         </p>
       </div>
 
-      <dl className="mt-5 grid grid-cols-2 gap-3 text-sm">
+      <dl className="mt-5 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
         <div className="rounded-md bg-white/8 p-3">
           <dt className="text-slate-400">Basket value</dt>
-          <dd className="mt-1 font-extrabold text-amber-300">{formatUgx.format(total)}</dd>
+          <dd className="mt-1 break-words font-extrabold text-amber-300">{formatUgx.format(total)}</dd>
         </div>
         <div className="rounded-md bg-white/8 p-3">
           <dt className="text-slate-400">Weight</dt>
@@ -487,14 +489,14 @@ function BasketSummary({ items }: { items: BasketItem[] }) {
           data-checkout-payload={checkoutPayload}
           target="_blank"
           rel="noreferrer"
-          className="inline-flex items-center justify-center gap-2 rounded-md bg-amber-400 px-4 py-3 text-sm font-extrabold text-slate-950 hover:bg-amber-300"
+          className="inline-flex items-center justify-center gap-2 rounded-md bg-amber-400 px-4 py-3 text-center text-sm font-extrabold text-slate-950 hover:bg-amber-300"
         >
           <MessageCircle size={18} />
           Send order on WhatsApp
         </a>
         <a
           href={`mailto:${companyProfile.email}?subject=${encodeURIComponent("Concrete product inquiry")}&body=${orderText}`}
-          className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-600 px-4 py-3 text-sm font-bold text-white hover:bg-white/10"
+          className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-600 px-4 py-3 text-center text-sm font-bold text-white hover:bg-white/10"
         >
           <Mail size={18} />
           Email quotation request
@@ -510,15 +512,15 @@ function LogisticsCapability({ basketWeightKg }: { basketWeightKg: number }) {
   const remainingBlocks = Math.max(0, Math.ceil((thresholdKg - basketWeightKg) / 13));
 
   return (
-    <section className="grid gap-5 rounded-lg bg-slate-950 p-5 text-white shadow-xl lg:grid-cols-2 lg:p-8">
-      <div className="rounded-lg border border-slate-800 bg-slate-900 p-6">
+    <section className="grid max-w-full gap-5 rounded-lg bg-slate-950 p-5 text-white shadow-xl lg:grid-cols-2 lg:p-8">
+      <div className="min-w-0 rounded-lg border border-slate-800 bg-slate-900 p-6">
         <div className="flex items-center gap-3">
-          <div className="rounded-md bg-amber-400 p-3 text-slate-950">
+          <div className="shrink-0 rounded-md bg-amber-400 p-3 text-slate-950">
             <Truck size={28} />
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-400">Fleet capability</p>
-            <h2 className="text-2xl font-extrabold">Our Dedicated Heavy Fleet Services</h2>
+            <h2 className="break-words text-2xl font-extrabold">Our Dedicated Heavy Fleet Services</h2>
           </div>
         </div>
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
@@ -535,11 +537,11 @@ function LogisticsCapability({ basketWeightKg }: { basketWeightKg: number }) {
         </div>
       </div>
 
-      <div className="rounded-lg border border-amber-400/40 bg-amber-400/10 p-6">
+      <div className="min-w-0 rounded-lg border border-amber-400/40 bg-amber-400/10 p-6">
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-300">Dynamic cart progress</p>
-            <h3 className="mt-1 text-2xl font-extrabold">Free Delivery Unlock Meter</h3>
+            <h3 className="mt-1 break-words text-2xl font-extrabold">Free Delivery Unlock Meter</h3>
           </div>
           <Calculator className="text-amber-300" size={30} />
         </div>
@@ -566,15 +568,15 @@ function MobileMoneyAndQr({ basketTotal, deliveryCost }: { basketTotal: number; 
   const payableTotal = basketTotal + deliveryCost;
 
   return (
-    <section id="payments" className="grid gap-5 rounded-lg border border-slate-200 bg-white p-5 shadow-sm lg:grid-cols-[1.15fr_0.85fr]">
-      <div>
+    <section id="payments" className="grid max-w-full gap-5 rounded-lg border border-slate-200 bg-white p-5 shadow-sm lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+      <div className="min-w-0">
         <div className="flex items-center gap-3">
-          <div className="rounded-md bg-slate-950 p-3 text-amber-400">
+          <div className="shrink-0 rounded-md bg-slate-950 p-3 text-amber-400">
             <CreditCard size={28} />
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">Mobile Money Payments</p>
-            <h2 className="text-3xl font-extrabold text-slate-950">Pay by MTN Mobile Money or Airtel Money</h2>
+            <h2 className="break-words text-2xl font-extrabold text-slate-950 sm:text-3xl">Pay by MTN Mobile Money or Airtel Money</h2>
           </div>
         </div>
 
@@ -590,7 +592,7 @@ function MobileMoneyAndQr({ basketTotal, deliveryCost }: { basketTotal: number; 
             <div className="p-5">
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-600">Payment receiving number</p>
-                <p className="mt-1 text-3xl font-extrabold text-slate-950">{companyProfile.mtnMobileMoney}</p>
+                <p className="mt-1 break-words text-2xl font-extrabold text-slate-950 sm:text-3xl">{companyProfile.mtnMobileMoney}</p>
               </div>
               <p className="mt-4 text-sm font-semibold leading-6 text-slate-700">
                 Use this number only after the factory confirms product availability, delivery date, and final invoice amount.
@@ -609,7 +611,7 @@ function MobileMoneyAndQr({ basketTotal, deliveryCost }: { basketTotal: number; 
             <div className="p-5">
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-600">Airtel payment route</p>
-                <p className="mt-1 text-2xl font-extrabold text-slate-950">Accepted after confirmation</p>
+                <p className="mt-1 break-words text-2xl font-extrabold text-slate-950">Accepted after confirmation</p>
               </div>
               <p className="mt-4 text-sm font-semibold leading-6 text-slate-700">{companyProfile.airtelMoneyNote}</p>
             </div>
@@ -621,15 +623,15 @@ function MobileMoneyAndQr({ basketTotal, deliveryCost }: { basketTotal: number; 
           <div className="mt-3 grid gap-3 sm:grid-cols-3">
             <div className="rounded-md bg-white p-4 shadow-sm">
               <p className="text-xs font-bold uppercase text-slate-500">Products</p>
-              <p className="mt-1 text-lg font-extrabold text-slate-950">{formatUgx.format(basketTotal)}</p>
+              <p className="mt-1 break-words text-lg font-extrabold text-slate-950">{formatUgx.format(basketTotal)}</p>
             </div>
             <div className="rounded-md bg-white p-4 shadow-sm">
               <p className="text-xs font-bold uppercase text-slate-500">Delivery</p>
-              <p className="mt-1 text-lg font-extrabold text-slate-950">{formatUgx.format(deliveryCost)}</p>
+              <p className="mt-1 break-words text-lg font-extrabold text-slate-950">{formatUgx.format(deliveryCost)}</p>
             </div>
             <div className="rounded-md bg-white p-4 shadow-sm">
               <p className="text-xs font-bold uppercase text-slate-500">Estimated payable</p>
-              <p className="mt-1 text-lg font-extrabold text-amber-700">{formatUgx.format(payableTotal)}</p>
+              <p className="mt-1 break-words text-lg font-extrabold text-amber-700">{formatUgx.format(payableTotal)}</p>
             </div>
           </div>
           <p className="mt-4 text-sm leading-6 text-slate-600">
@@ -639,7 +641,7 @@ function MobileMoneyAndQr({ basketTotal, deliveryCost }: { basketTotal: number; 
         </div>
       </div>
 
-      <div id="qr" className="rounded-lg bg-slate-950 p-5 text-white">
+      <div id="qr" className="min-w-0 rounded-lg bg-slate-950 p-5 text-white">
         <div className="flex items-center gap-3">
           <QrCode className="text-amber-400" size={30} />
           <div>
@@ -663,7 +665,7 @@ function MobileMoneyAndQr({ basketTotal, deliveryCost }: { basketTotal: number; 
           href={companyProfile.publicWebsiteUrl}
           target="_blank"
           rel="noreferrer"
-          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md bg-amber-400 px-4 py-3 text-sm font-extrabold text-slate-950 hover:bg-amber-300"
+          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md bg-amber-400 px-4 py-3 text-center text-sm font-extrabold text-slate-950 hover:bg-amber-300"
         >
           Open public website
           <ArrowRight size={17} />
@@ -842,11 +844,13 @@ function ProductCatalogueGallery({
   const otherImages = images.filter((_, index) => index !== selectedImageIndex);
 
   return (
-    <section id="catalogue-gallery" className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+    <section id="catalogue-gallery" className="max-w-full rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
+        <div className="min-w-0">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">Full product catalogue</p>
-          <h2 className="mt-1 text-3xl font-extrabold text-slate-950">One main product photo, with more views on demand</h2>
+          <h2 className="mt-1 break-words text-2xl font-extrabold text-slate-950 sm:text-3xl">
+            One main product photo, with more views on demand
+          </h2>
           <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
             Select a product below to view one clean display image first, then open the dropdown for the other nine
             catalogue views. No third-party branded website photos are used here; replace catalogue visuals only with
@@ -859,7 +863,7 @@ function ProductCatalogueGallery({
         </div>
       </div>
 
-      <div className="mt-5 flex gap-2 overflow-x-auto pb-2">
+      <div className="touch-scroll mt-5 flex max-w-full gap-2 overflow-x-auto pb-2">
         {products.map((product) => (
           <button
             key={product.id}
@@ -868,7 +872,7 @@ function ProductCatalogueGallery({
               onSelect(product);
               setSelectedImageIndex(0);
             }}
-            className={`shrink-0 rounded-md border px-3 py-2 text-left text-sm font-bold ${
+            className={`max-w-[14rem] shrink-0 whitespace-normal break-words rounded-md border px-3 py-2 text-left text-sm font-bold ${
               selected.id === product.id
                 ? "border-amber-400 bg-amber-50 text-slate-950"
                 : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
@@ -880,7 +884,7 @@ function ProductCatalogueGallery({
         ))}
       </div>
 
-      <div className="mt-5 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+      <div className="mt-5 grid max-w-full gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
         <figure className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
           <FallbackImage
             src={mainImage.src}
@@ -889,7 +893,7 @@ function ProductCatalogueGallery({
             className="aspect-[4/3] w-full bg-slate-200 object-cover"
           />
           <figcaption className="flex flex-wrap items-center justify-between gap-3 px-4 py-4 text-sm font-bold text-slate-700">
-            <span>{mainImage.label}</span>
+            <span className="min-w-0 break-words">{mainImage.label}</span>
             <span>Photo {selectedImageIndex + 1} of {catalogueViewCount}</span>
           </figcaption>
           {mainImage.matchNote ? (
@@ -899,15 +903,15 @@ function ProductCatalogueGallery({
           ) : null}
         </figure>
 
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-5">
+        <div className="min-w-0 rounded-lg border border-slate-200 bg-slate-50 p-5">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">Display control</p>
-          <h3 className="mt-1 text-2xl font-extrabold text-slate-950">{selected.name}</h3>
+          <h3 className="mt-1 break-words text-2xl font-extrabold text-slate-950">{selected.name}</h3>
           <label className="mt-5 grid gap-2 text-sm font-semibold text-slate-700">
             Choose display photo
             <select
               value={selectedImageIndex}
               onChange={(event) => setSelectedImageIndex(Number(event.target.value))}
-              className="rounded-md border border-slate-300 bg-white px-3 py-3"
+              className="w-full rounded-md border border-slate-300 bg-white px-3 py-3"
             >
               {images.map((image, index) => (
                 <option key={image.id} value={index}>
@@ -969,7 +973,7 @@ function ProductCard({
   const locked = product.availableStock === 0 || product.curingStatus !== "Released for Sale" || product.approvalState !== "Internal Pass";
 
   return (
-    <article className="group relative overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+    <article className="group relative max-w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
       <div className="relative aspect-[4/3] overflow-hidden bg-slate-200">
         <FallbackImage
           src={product.image}
@@ -990,20 +994,20 @@ function ProductCard({
       </div>
       <div className="p-5">
         <div className="flex items-start justify-between gap-3">
-          <div>
-            <h3 className="text-lg font-extrabold text-slate-950">{product.name}</h3>
+          <div className="min-w-0">
+            <h3 className="break-words text-lg font-extrabold text-slate-950">{product.name}</h3>
             <p className="mt-1 text-sm leading-6 text-slate-600">{product.description}</p>
           </div>
           <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-bold uppercase text-slate-600">
             {product.unit}
           </span>
         </div>
-        <div className="mt-5 flex items-end justify-between gap-3">
-          <div>
+        <div className="mt-5 flex flex-wrap items-end justify-between gap-3">
+          <div className="min-w-0">
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Ex-works price</p>
-            <p className="text-xl font-extrabold text-slate-950">{formatUgx.format(product.priceUgx)}</p>
+            <p className="break-words text-xl font-extrabold text-slate-950">{formatUgx.format(product.priceUgx)}</p>
           </div>
-          <div className="grid gap-2">
+          <div className="grid min-w-[9rem] gap-2">
             <button
               type="button"
               onClick={() => onSelect(product)}
@@ -1066,28 +1070,28 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
   const creditBlocked = paymentMode === "credit" && basketTotal + deliveryCost > remainingCredit;
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen max-w-full overflow-x-hidden bg-slate-50">
       <GlobalDeliveryBanner />
       <PublicHeader />
-      <main className="mx-auto max-w-[1600px] space-y-8 px-4 py-5 lg:px-6">
-      <section className="overflow-hidden rounded-lg bg-slate-950 text-white shadow-xl">
-        <div className="grid min-h-[620px] lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="flex flex-col justify-center px-5 py-12 sm:px-8 lg:px-12">
+      <main className="mx-auto max-w-7xl space-y-8 overflow-hidden px-3 py-5 sm:px-4 lg:px-6">
+      <section className="overflow-hidden rounded-md bg-slate-950 text-white shadow-xl sm:rounded-lg">
+        <div className="grid min-h-[auto] lg:min-h-[620px] lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+          <div className="flex min-w-0 flex-col justify-center px-5 py-12 sm:px-8 lg:px-12">
             <div className="inline-flex w-fit items-center gap-2 rounded-full border border-amber-400/40 bg-amber-400/10 px-4 py-2 text-sm font-bold text-amber-300">
               <span className="h-2 w-2 rounded-full bg-emerald-400" />
               Live plant status: quoting and dispatch planning open
             </div>
-            <h1 className="mt-7 max-w-4xl text-4xl font-black leading-tight tracking-normal sm:text-5xl lg:text-6xl">
+            <h1 className="mt-7 max-w-4xl break-words text-3xl font-black leading-tight tracking-normal sm:text-5xl lg:text-6xl">
               Factory-direct concrete products for serious construction across Western Uganda.
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
+            <p className="drop-cap mt-6 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
               Order hollow blocks, solid blocks, pavers, kerbstones, drainage channels, culverts, and future ready-mix concrete
               from a disciplined Mbarara production platform built around UGX pricing, batch traceability, and direct site delivery.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <a
                 href="#products"
-                className="inline-flex items-center gap-2 rounded-md bg-amber-400 px-5 py-3 text-sm font-extrabold text-slate-950 hover:bg-amber-300"
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-amber-400 px-5 py-3 text-center text-sm font-extrabold text-slate-950 hover:bg-amber-300"
               >
                 View products and prices
                 <ArrowRight size={18} />
@@ -1096,7 +1100,7 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
                 href={`${contactLinks.whatsappUganda}?text=${encodeURIComponent("Hello, I want to inquire about concrete products from Mbarara Integrated Concrete Products Factory.")}`}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-md border border-white/20 px-5 py-3 text-sm font-bold text-white hover:bg-white/10"
+                className="inline-flex items-center justify-center gap-2 rounded-md border border-white/20 px-5 py-3 text-center text-sm font-bold text-white hover:bg-white/10"
               >
                 <MessageCircle size={18} />
                 Chat now
@@ -1115,7 +1119,7 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
               ))}
             </div>
           </div>
-          <div className="relative min-h-[420px]">
+          <div className="relative min-h-[320px] min-w-0 sm:min-h-[420px]">
             <FallbackImage
               src="/assets/images/mbarara-factory-yard.png"
               fallbackSrc="/assets/images/factory-hero.jpg"
@@ -1129,13 +1133,13 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
 
       <LogisticsCapability basketWeightKg={basketWeight} />
 
-      <section id="products" className="grid gap-6 xl:grid-cols-[1fr_360px]">
-        <div className="space-y-5">
+      <section id="products" className="grid max-w-full gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,360px)]">
+        <div className="min-w-0 space-y-5">
           <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-4">
-              <div>
+              <div className="min-w-0">
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">Product catalogue</p>
-                <h2 className="text-3xl font-extrabold text-slate-950">Products, prices, filters, and quotation basket</h2>
+                <h2 className="break-words text-2xl font-extrabold text-slate-950 sm:text-3xl">Products, prices, filters, and quotation basket</h2>
               </div>
               <div className="inline-flex items-center gap-2 rounded-md bg-slate-100 px-3 py-2 text-sm font-bold text-slate-700">
                 <Filter size={17} />
@@ -1143,8 +1147,8 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
               </div>
             </div>
 
-            <div className="mt-5 grid gap-3 md:grid-cols-5">
-              <label className="grid gap-2 text-sm font-semibold text-slate-700 md:col-span-2">
+            <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+              <label className="grid gap-2 text-sm font-semibold text-slate-700 lg:col-span-2">
                 Search product
                 <input
                   value={query}
@@ -1217,10 +1221,10 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
         <BasketSummary items={basket} />
       </section>
 
-      <section className="grid gap-5 rounded-lg border border-slate-200 bg-white p-5 shadow-sm lg:grid-cols-[0.9fr_1.1fr]">
-        <div>
+      <section className="grid max-w-full gap-5 rounded-lg border border-slate-200 bg-white p-5 shadow-sm lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+        <div className="min-w-0">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">Checkout safeguard</p>
-          <h2 className="mt-1 text-3xl font-extrabold text-slate-950">Choose payment route</h2>
+          <h2 className="mt-1 break-words text-2xl font-extrabold text-slate-950 sm:text-3xl">Choose payment route</h2>
           <p className="mt-3 text-sm leading-7 text-slate-600">
             Public buyers can submit an order inquiry by WhatsApp or email. Verified contractors can request credit-account fulfilment
             subject to balance and approved credit limit checks.
@@ -1244,7 +1248,7 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
             </button>
           </div>
         </div>
-        <div className={`rounded-lg border p-5 ${creditBlocked ? "border-amber-500 bg-amber-50" : "border-slate-200 bg-slate-50"}`}>
+        <div className={`min-w-0 rounded-lg border p-5 ${creditBlocked ? "border-amber-500 bg-amber-50" : "border-slate-200 bg-slate-50"}`}>
           <div className="grid gap-3 sm:grid-cols-3">
             {[
               ["Approved Credit Limit", approvedCreditLimit],
@@ -1253,7 +1257,7 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
             ].map(([label, value]) => (
               <div key={label} className="rounded-md bg-white p-4 shadow-sm">
                 <p className="text-xs font-bold uppercase text-slate-500">{label}</p>
-                <p className={`mt-2 text-lg font-extrabold ${label === "Current Outstanding Balance" ? "text-red-600" : "text-slate-950"}`}>
+                <p className={`mt-2 break-words text-lg font-extrabold ${label === "Current Outstanding Balance" ? "text-red-600" : "text-slate-950"}`}>
                   {formatUgx.format(value as number)}
                 </p>
               </div>
@@ -1283,7 +1287,7 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
             <h2 className="mt-1 text-3xl font-extrabold">B2B ledger, order tracking, and blueprint requests</h2>
           </div>
           <div className="lg:col-span-2">
-            <div className="grid gap-3 md:grid-cols-5">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
               {["Draft", "Approved", "Fulfilling", "Out for Delivery", "Completed"].map((step, index) => (
                 <div key={step} className="rounded-md border border-slate-800 bg-white/5 p-3">
                   <div className={`mb-3 h-2 rounded-full ${index <= 3 ? "bg-amber-400" : "bg-slate-700"}`} />
@@ -1325,7 +1329,7 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
       </section>
 
       <section id="founder" className="rounded-lg bg-white p-5 shadow-sm">
-        <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-center">
           <div className="rounded-lg bg-slate-100 p-4">
             <img
               src={publicAsset(companyProfile.founderPortraitPath)}
@@ -1333,16 +1337,16 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
               className="mx-auto w-full max-w-sm aspect-[9/16] object-contain object-top shadow-lg rounded-xl border border-slate-800 bg-slate-100"
             />
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-amber-500 tracking-widest text-xs font-bold uppercase">FOUNDER & MANAGING DIRECTOR</p>
-            <h2 className="mb-2 mt-2 text-3xl font-extrabold text-slate-900 dark:text-white">{companyProfile.directorName}</h2>
+            <h2 className="mb-2 mt-2 break-words text-3xl font-extrabold text-slate-900 dark:text-white">{companyProfile.directorName}</h2>
             <p className="text-sm font-bold text-slate-500">{companyProfile.directorTitle}</p>
             <blockquote className="mt-6 rounded-lg border-l-4 border-amber-400 bg-slate-950 p-6 text-lg font-semibold leading-8 text-white shadow-lg">
               "Our commitment is to build a factory known for structural durability, disciplined curing, laboratory crushing tests,
               and reliable industrial supply across Mbarara, Western Uganda, and the wider East African growth corridor."
             </blockquote>
             <div className="mt-6 flex flex-wrap gap-3">
-              <a href={contactLinks.email} className="inline-flex items-center gap-2 rounded-md bg-slate-950 px-4 py-3 text-sm font-bold text-white">
+              <a href={contactLinks.email} className="inline-flex items-center justify-center gap-2 rounded-md bg-slate-950 px-4 py-3 text-center text-sm font-bold text-white">
                 <Mail size={18} />
                 {companyProfile.email}
               </a>
@@ -1350,7 +1354,7 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
                 href={contactLinks.whatsappUganda}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-md bg-amber-400 px-4 py-3 text-sm font-extrabold text-slate-950"
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-amber-400 px-4 py-3 text-center text-sm font-extrabold text-slate-950"
               >
                 <Phone size={18} />
                 WhatsApp Uganda
@@ -1361,21 +1365,21 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
       </section>
 
       <section id="inquiry" className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
-          <div>
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
+          <div className="min-w-0">
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">Send inquiry</p>
-            <h2 className="mt-1 text-3xl font-extrabold text-slate-950">Ask for price confirmation, delivery, or project supply</h2>
+            <h2 className="mt-1 break-words text-2xl font-extrabold text-slate-950 sm:text-3xl">Ask for price confirmation, delivery, or project supply</h2>
             <div className="mt-5 space-y-3 text-sm font-semibold text-slate-700">
-              <p className="flex items-center gap-2">
-                <MapPin size={18} className="text-amber-500" />
+              <p className="flex items-center gap-2 break-words">
+                <MapPin size={18} className="shrink-0 text-amber-500" />
                 {companyProfile.primaryLocation}
               </p>
-              <p className="flex items-center gap-2">
-                <Mail size={18} className="text-amber-500" />
+              <p className="flex items-center gap-2 break-words">
+                <Mail size={18} className="shrink-0 text-amber-500" />
                 {companyProfile.email}
               </p>
-              <p className="flex items-center gap-2">
-                <MessageCircle size={18} className="text-amber-500" />
+              <p className="flex items-center gap-2 break-words">
+                <MessageCircle size={18} className="shrink-0 text-amber-500" />
                 {companyProfile.whatsappGermany} | {companyProfile.whatsappUganda}
               </p>
             </div>
@@ -1398,7 +1402,7 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
             <input name="location" placeholder="Project location" className="rounded-md border border-slate-300 px-3 py-3" />
             <textarea name="message" rows={5} placeholder="Tell us product, quantity, delivery location, and timing..." className="rounded-md border border-slate-300 px-3 py-3" />
             <div className="flex flex-wrap gap-3">
-              <button type="submit" className="inline-flex items-center gap-2 rounded-md bg-slate-950 px-5 py-3 text-sm font-extrabold text-white">
+              <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-md bg-slate-950 px-5 py-3 text-center text-sm font-extrabold text-white">
                 <PackageCheck size={18} />
                 Submit inquiry
               </button>
@@ -1406,7 +1410,7 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
                 href={`${contactLinks.whatsappGermany}?text=${encodeURIComponent("Hello, I want to inquire about Mbarara concrete products.")}`}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-md bg-amber-400 px-5 py-3 text-sm font-extrabold text-slate-950"
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-amber-400 px-5 py-3 text-center text-sm font-extrabold text-slate-950"
               >
                 <MessageCircle size={18} />
                 Chat now
@@ -1423,7 +1427,7 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
 
       <footer className="rounded-lg bg-slate-950 p-6 text-white">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
+          <div className="min-w-0">
             <p className="text-lg font-extrabold">{companyProfile.name}</p>
             <p className="mt-1 text-sm text-slate-400">UGX pricing only. Market prices, Mobile Money payments, and bulk delivery terms must be confirmed before final order.</p>
           </div>
