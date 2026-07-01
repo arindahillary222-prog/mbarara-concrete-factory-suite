@@ -11,7 +11,7 @@ export const companyProfile = {
   mtnMobileMoney: "+256772938407",
   airtelMoneyNote: "Airtel Money payments are accepted after order confirmation. Confirm the active Airtel receiving number by WhatsApp before sending money.",
   primaryLocation: "Mbarara City, Western Uganda",
-  publicWebsiteUrl: "https://inspiring-toffee-a04a92.netlify.app/",
+  publicWebsiteUrl: "https://mbarara-concrete-factory.netlify.app/",
   founderPortraitPath: "/images/founder-portrait.jpg",
   managingDirectorAssetPath: "/assets/images/managing-director.png",
   qrCodePath: "/assets/images/site-qr.png",

@@ -863,7 +863,7 @@ function ProductCatalogueGallery({
         </div>
       </div>
 
-      <div className="touch-scroll mt-5 flex max-w-full gap-2 overflow-x-auto pb-2">
+      <div className="mt-5 flex max-w-full flex-wrap gap-2 pb-2">
         {products.map((product) => (
           <button
             key={product.id}
@@ -872,7 +872,7 @@ function ProductCatalogueGallery({
               onSelect(product);
               setSelectedImageIndex(0);
             }}
-            className={`max-w-[14rem] shrink-0 whitespace-normal break-words rounded-md border px-3 py-2 text-left text-sm font-bold ${
+            className={`min-w-[9rem] max-w-[14rem] flex-1 whitespace-normal break-words rounded-md border px-3 py-2 text-left text-sm font-bold sm:flex-none ${
               selected.id === product.id
                 ? "border-amber-400 bg-amber-50 text-slate-950"
                 : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"

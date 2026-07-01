@@ -6,7 +6,7 @@ Professional planning, simulation, ERP, public website, reporting, and backend s
 
 Customer-facing website, product catalogue, inquiry flow, QR code, founder section, logistics/free-delivery messaging, and MTN/Airtel Mobile Money information:
 
-**https://inspiring-toffee-a04a92.netlify.app/**
+**https://mbarara-concrete-factory.netlify.app/**
 
 ## Project note
 
@@ -69,7 +69,7 @@ The backend is structured for PostgreSQL and future ERP integration. Local datab
 
 For customers, colleagues in Uganda, Germany, or anywhere else, share the Netlify link:
 
-**https://inspiring-toffee-a04a92.netlify.app/**
+**https://mbarara-concrete-factory.netlify.app/**
 
 GitHub is for project source code, reports, and technical handover. The Netlify link is the simple public website link.
 
