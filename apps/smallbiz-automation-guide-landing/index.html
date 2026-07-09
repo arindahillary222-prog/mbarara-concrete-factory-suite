@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Arindahill Small Business Automation Studio</title>
+  <meta name="description" content="Practical automation guides and workflow systems for small businesses that want to save time, reduce admin work, and operate more professionally.">
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f3ea;
+      --panel: #fffaf0;
+      --panel-2: #ffffff;
+      --ink: #172033;
+      --muted: #5d6474;
+      --line: #ddd3bd;
+      --accent: #0f766e;
+      --accent-2: #c2872d;
+      --accent-3: #233b5d;
+      --shadow: 0 24px 80px rgba(23, 32, 51, 0.14);
+      --radius: 22px;
+      --max: 1180px;
+    }
+
+    [data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #111827;
+      --panel: #182235;
+      --panel-2: #0f172a;
+      --ink: #f8fafc;
+      --muted: #cbd5e1;
+      --line: #334155;
+      --accent: #5eead4;
+      --accent-2: #fbbf24;
+      --accent-3: #93c5fd;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-width: 0;
+      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 10% 0%, rgba(15, 118, 110, 0.18), transparent 32rem),
+        radial-gradient(circle at 95% 10%, rgba(194, 135, 45, 0.18), transparent 28rem),
+        var(--bg);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+
+    a { color: inherit; }
+    img, svg { max-width: 100%; }
+    button, input, textarea { font: inherit; }
+    .wrap { width: min(var(--max), calc(100% - 32px)); margin: 0 auto; }
+    .skip {
+      position: absolute;
+      left: 1rem;
+      top: -4rem;
+      z-index: 10;
+      border-radius: 999px;
+      background: var(--ink);
+      color: var(--bg);
+      padding: 0.75rem 1rem;
+      transition: top 0.2s ease;
+    }
+    .skip:focus { top: 1rem; }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      border-bottom: 1px solid color-mix(in srgb, var(--line) 78%, transparent);
+      background: color-mix(in srgb, var(--bg) 84%, transparent);
+      backdrop-filter: blur(18px);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.8rem 0;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      min-width: 0;
+      text-decoration: none;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
+
+    .mark {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      flex: 0 0 auto;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-3));
+      color: #fff;
+      box-shadow: 0 12px 30px rgba(15, 118, 110, 0.22);
+    }
+
+    .brand span:last-child {
+      overflow-wrap: anywhere;
+    }
+
+    .navlinks {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.35rem;
+      min-width: 0;
+    }
+
+    .navlinks a,
+    .theme-toggle {
+      border: 1px solid transparent;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 0.65rem 0.8rem;
+      text-decoration: none;
+      font-size: 0.92rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .navlinks a:hover,
+    .theme-toggle:hover,
+    .navlinks a:focus-visible,
+    .theme-toggle:focus-visible {
+      border-color: var(--line);
+      color: var(--ink);
+      outline: none;
+    }
+
+    main { padding-bottom: 4rem; }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.9fr);
+      gap: clamp(1.5rem, 4vw, 4rem);
+      align-items: center;
+      padding: clamp(3rem, 8vw, 7rem) 0 3rem;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--panel) 70%, transparent);
+      color: var(--accent-3);
+      padding: 0.5rem 0.75rem;
+      font-size: 0.78rem;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 1rem 0 0;
+      max-width: 13ch;
+      font-size: clamp(2.7rem, 7vw, 6.5rem);
+      line-height: 0.94;
+      letter-spacing: -0.055em;
+    }
+
+    .lead {
+      max-width: 64ch;
+      margin: 1.3rem 0 0;
+      color: var(--muted);
+      font-size: clamp(1.05rem, 2vw, 1.24rem);
+    }
+
+    .lead::first-letter {
+      float: left;
+      margin: 0.08rem 0.42rem 0 0;
+      color: var(--accent);
+      font-size: 3.2rem;
+      font-weight: 950;
+      line-height: 0.9;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      margin-top: 1.4rem;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.55rem;
+      min-height: 46px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0.78rem 1rem;
+      text-decoration: none;
+      font-weight: 900;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .button:hover { transform: translateY(-2px); }
+    .button.primary {
+      border-color: color-mix(in srgb, var(--accent) 70%, var(--line));
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 18px 45px rgba(15, 118, 110, 0.22);
+    }
+    [data-theme="dark"] .button.primary { color: #06201c; }
+    .button.secondary { background: color-mix(in srgb, var(--panel) 78%, transparent); color: var(--ink); }
+
+    .trust-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.8rem;
+      margin-top: 1.6rem;
+    }
+
+    .mini-stat {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: color-mix(in srgb, var(--panel) 80%, transparent);
+      padding: 1rem;
+    }
+
+    .mini-stat strong {
+      display: block;
+      font-size: 1.35rem;
+      line-height: 1;
+    }
+
+    .mini-stat span {
+      display: block;
+      margin-top: 0.35rem;
+      color: var(--muted);
+      font-size: 0.86rem;
+      font-weight: 750;
+    }
+
+    .hero-card {
+      position: relative;
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, color-mix(in srgb, var(--panel) 96%, transparent), color-mix(in srgb, var(--panel-2) 92%, transparent));
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .hero-card::before {
+      content: "";
+      display: block;
+      height: 12px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+    }
+
+    .workflow {
+      padding: clamp(1.1rem, 3vw, 1.6rem);
+    }
+
+    .workflow h2,
+    .section-title h2 {
+      margin: 0;
+      font-size: clamp(1.45rem, 3vw, 2.1rem);
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr);
+      gap: 0.9rem;
+      align-items: start;
+      border-bottom: 1px solid var(--line);
+      padding: 1rem 0;
+    }
+    .step:last-child { border-bottom: 0; }
+    .num {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: color-mix(in srgb, var(--accent) 16%, transparent);
+      color: var(--accent);
+      font-weight: 950;
+    }
+    .step h3 { margin: 0; font-size: 1rem; }
+    .step p { margin: 0.28rem 0 0; color: var(--muted); font-size: 0.94rem; }
+
+    section {
+      padding: clamp(2rem, 6vw, 4rem) 0;
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: end;
+      margin-bottom: 1.2rem;
+    }
+
+    .section-title p {
+      max-width: 58ch;
+      margin: 0.5rem 0 0;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .card {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: color-mix(in srgb, var(--panel-2) 92%, transparent);
+      padding: 1.25rem;
+      box-shadow: 0 12px 36px rgba(23, 32, 51, 0.08);
+    }
+
+    .card h3 { margin: 0; font-size: 1.1rem; letter-spacing: -0.015em; }
+    .card p { margin: 0.55rem 0 0; color: var(--muted); }
+    .iconbox {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      margin-bottom: 0.9rem;
+      border-radius: 14px;
+      background: color-mix(in srgb, var(--accent-2) 18%, transparent);
+      color: var(--accent-2);
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .product {
+      display: grid;
+      grid-template-columns: 82px minmax(0, 1fr);
+      gap: 1rem;
+      align-items: start;
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel-2);
+      padding: 1rem;
+    }
+
+    .product-art {
+      display: grid;
+      place-items: center;
+      width: 82px;
+      height: 82px;
+      border-radius: 20px;
+      background:
+        linear-gradient(135deg, color-mix(in srgb, var(--accent) 82%, #fff), color-mix(in srgb, var(--accent-3) 75%, #fff));
+      color: #fff;
+      font-size: 1.8rem;
+      font-weight: 950;
+      letter-spacing: -0.05em;
+    }
+
+    .product h3 {
+      margin: 0;
+      overflow-wrap: anywhere;
+      font-size: 1.08rem;
+    }
+    .product p { margin: 0.45rem 0 0; color: var(--muted); font-size: 0.95rem; }
+    .price { display: inline-block; margin-top: 0.6rem; color: var(--accent); font-weight: 950; }
+    .product a { margin-top: 0.85rem; }
+
+    .offer {
+      display: grid;
+      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+      gap: 1rem;
+      align-items: stretch;
+    }
+
+    .offer-panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--ink);
+      color: var(--bg);
+      padding: clamp(1.3rem, 4vw, 2rem);
+      min-width: 0;
+    }
+    [data-theme="dark"] .offer-panel { background: #020617; }
+    .offer-panel p { color: color-mix(in srgb, var(--bg) 78%, transparent); }
+    .offer-list {
+      display: grid;
+      gap: 0.75rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .offer-list li {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: color-mix(in srgb, var(--panel-2) 92%, transparent);
+      padding: 1rem;
+      color: var(--muted);
+    }
+    .offer-list strong { display: block; color: var(--ink); }
+
+    .faq details {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: color-mix(in srgb, var(--panel-2) 92%, transparent);
+      padding: 1rem;
+    }
+    .faq details + details { margin-top: 0.75rem; }
+    .faq summary { cursor: pointer; font-weight: 900; }
+    .faq p { color: var(--muted); }
+
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 2rem 0;
+      color: var(--muted);
+    }
+    .footer-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 860px) {
+      .hero,
+      .offer,
+      .product-grid,
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      .section-title { display: block; }
+      .nav { align-items: flex-start; }
+      .navlinks {
+        max-width: 100%;
+        overflow-x: auto;
+        padding-bottom: 0.2rem;
+      }
+      .trust-row { grid-template-columns: 1fr; }
+      h1 { max-width: 11ch; }
+    }
+
+    @media (max-width: 520px) {
+      .wrap { width: min(100% - 22px, var(--max)); }
+      .brand span:last-child { display: none; }
+      .hero { padding-top: 2rem; }
+      .product { grid-template-columns: 1fr; }
+      .product-art { width: 100%; height: 96px; }
+      .button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <script id="gumroad-data" type="application/json">{"products":[],"posts":[],"pages":[]}</script>
+
+  <header>
+    <div class="wrap nav" aria-label="Primary navigation">
+      <a class="brand" href="#top" aria-label="Arindahill home">
+        <span class="mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19V5"></path><path d="M4 19h16"></path><path d="M8 15l3-4 3 2 5-7"></path>
+          </svg>
+        </span>
+        <span data-gumroad-field="name">Arindahill Automation Studio</span>
+      </a>
+      <nav class="navlinks" aria-label="Page sections">
+        <a href="#guide">Guide</a>
+        <a href="#systems">Systems</a>
+        <a href="#products">Products</a>
+        <a href="#faq">FAQ</a>
+        <button class="theme-toggle" type="button" aria-label="Toggle light and dark mode" data-theme-toggle>Theme</button>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="wrap hero" id="top">
+      <div>
+        <span class="eyebrow">Small business automation without confusion</span>
+        <h1>Less admin. Better systems. More time.</h1>
+        <p class="lead" data-gumroad-field="bio">I build practical automation guides for small businesses, creators, students, and solo founders who want cleaner workflows without hiring a full technical team.</p>
+        <div class="cta-row">
+          <a class="button primary" href="https://arindahill.gumroad.com/l/smallbiz-automation-guide">Open the automation guide</a>
+          <a class="button secondary" href="#products">View products</a>
+        </div>
+        <div class="trust-row" aria-label="Business outcomes">
+          <div class="mini-stat"><strong>10+</strong><span>workflow areas to improve</span></div>
+          <div class="mini-stat"><strong>1 day</strong><span>to start using the checklist</span></div>
+          <div class="mini-stat"><strong>0 code</strong><span>required for most steps</span></div>
+        </div>
+      </div>
+
+      <aside class="hero-card" aria-label="Automation workflow preview">
+        <div class="workflow">
+          <h2>What the guide helps you organise</h2>
+          <div class="step">
+            <div class="num">1</div>
+            <div><h3>Customer capture</h3><p>Turn inquiries from email, WhatsApp, forms, and social media into a reliable follow-up list.</p></div>
+          </div>
+          <div class="step">
+            <div class="num">2</div>
+            <div><h3>Simple operations</h3><p>Use repeatable templates for quotes, invoices, reminders, stock checks, and daily tasks.</p></div>
+          </div>
+          <div class="step">
+            <div class="num">3</div>
+            <div><h3>Growth reporting</h3><p>Track sales, leads, expenses, customer balances, and next actions in one clear routine.</p></div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="wrap" id="systems">
+      <div class="section-title">
+        <div>
+          <span class="eyebrow">Built for real small businesses</span>
+          <h2>Automation that feels practical, not technical.</h2>
+        </div>
+        <p>The point is not to impress people with software names. The point is to help a business owner respond faster, collect money cleaner, follow up better, and stop losing work in scattered messages.</p>
+      </div>
+      <div class="grid">
+        <article class="card">
+          <div class="iconbox" aria-hidden="true">01</div>
+          <h3>Lead follow-up system</h3>
+          <p>Capture new prospects, rank them, set reminders, and know exactly who needs a reply today.</p>
+        </article>
+        <article class="card">
+          <div class="iconbox" aria-hidden="true">02</div>
+          <h3>Operations checklist</h3>
+          <p>Daily, weekly, and monthly routines for orders, customer service, delivery, inventory, and reporting.</p>
+        </article>
+        <article class="card">
+          <div class="iconbox" aria-hidden="true">03</div>
+          <h3>Owner dashboard mindset</h3>
+          <p>Know the few numbers that matter: revenue, unpaid balances, repeat customers, expenses, and next actions.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="wrap" id="guide">
+      <div class="offer">
+        <div class="offer-panel">
+          <span class="eyebrow">Current flagship product</span>
+          <h2>SmallBiz Automation Guide</h2>
+          <p>A practical playbook for people who want to make a business look and operate more professionally using simple tools, templates, and automation habits.</p>
+          <a class="button primary" href="https://arindahill.gumroad.com/l/smallbiz-automation-guide">Open product page</a>
+        </div>
+        <ul class="offer-list">
+          <li><strong>For service businesses</strong> Coaches, consultants, agencies, repair shops, salons, clinics, schools, hotels, trades, and local suppliers.</li>
+          <li><strong>For solo founders</strong> People starting with a laptop, phone, WhatsApp, email, spreadsheets, and limited capital.</li>
+          <li><strong>For serious improvement</strong> Cleaner client intake, better follow-up, fewer forgotten tasks, faster reporting, and stronger trust.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="wrap" id="products">
+      <div class="section-title">
+        <div>
+          <span class="eyebrow">Live catalog</span>
+          <h2>Products and resources</h2>
+        </div>
+        <p>On Gumroad, this section reads live product data from your account. On Netlify, it shows the current automation guide fallback.</p>
+      </div>
+      <div class="product-grid" data-products></div>
+    </section>
+
+    <section class="wrap faq" id="faq">
+      <div class="section-title">
+        <div>
+          <span class="eyebrow">Questions</span>
+          <h2>What visitors should understand quickly</h2>
+        </div>
+      </div>
+      <details open>
+        <summary>Is this for technical people only?</summary>
+        <p>No. It is written for practical business owners and beginners who want structure before expensive software.</p>
+      </details>
+      <details>
+        <summary>Can this help me get clients for automation services?</summary>
+        <p>Yes. The guide also positions you as someone who understands small-business systems, which can lead into paid setup, consulting, templates, and support work.</p>
+      </details>
+      <details>
+        <summary>Does this page include a checkout button?</summary>
+        <p>No. Gumroad custom profile pages should link to product pages. Visitors open the product page and Gumroad handles the purchase flow there.</p>
+      </details>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap footer-row">
+      <span>Arindahill Automation Studio</span>
+      <span>Contact: arindahillary222@gmail.com</span>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var savedTheme = "";
+      try { savedTheme = localStorage.getItem("arindahill-theme") || ""; } catch (error) {}
+      if (savedTheme) root.setAttribute("data-theme", savedTheme);
+
+      var toggle = document.querySelector("[data-theme-toggle]");
+      if (toggle) {
+        toggle.addEventListener("click", function () {
+          var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+          root.setAttribute("data-theme", next);
+          try { localStorage.setItem("arindahill-theme", next); } catch (error) {}
+        });
+      }
+
+      function text(value, fallback) {
+        return (value && String(value).trim()) || fallback;
+      }
+
+      function initials(name) {
+        return text(name, "Guide")
+          .split(/\s+/)
+          .slice(0, 2)
+          .map(function (part) { return part.charAt(0).toUpperCase(); })
+          .join("");
+      }
+
+      function productCard(product) {
+        var article = document.createElement("article");
+        article.className = "product";
+
+        var art = document.createElement("div");
+        art.className = "product-art";
+        art.setAttribute("aria-hidden", "true");
+        art.textContent = initials(product.name);
+
+        var body = document.createElement("div");
+        var title = document.createElement("h3");
+        title.textContent = text(product.name, "SmallBiz Automation Guide");
+
+        var description = document.createElement("p");
+        description.textContent = text(product.description, "A practical guide for improving small-business operations, follow-up, reporting, and repeatable workflows.");
+
+        var price = document.createElement("span");
+        price.className = "price";
+        price.textContent = text(product.price, "Available on Gumroad");
+
+        var link = document.createElement("a");
+        link.className = "button secondary";
+        link.href = text(product.url, "https://arindahill.gumroad.com/l/smallbiz-automation-guide");
+        link.textContent = "Open product page";
+
+        body.appendChild(title);
+        body.appendChild(description);
+        body.appendChild(price);
+        body.appendChild(document.createElement("br"));
+        body.appendChild(link);
+        article.appendChild(art);
+        article.appendChild(body);
+        return article;
+      }
+
+      var fallback = {
+        name: "SmallBiz Automation Guide",
+        url: "https://arindahill.gumroad.com/l/smallbiz-automation-guide",
+        price: "Available on Gumroad",
+        description: "A practical automation guide for small businesses that want better follow-up, cleaner operations, and more professional systems."
+      };
+
+      var data = { products: [fallback], posts: [], pages: [] };
+      var dataNode = document.getElementById("gumroad-data");
+      if (dataNode && dataNode.textContent.trim()) {
+        try {
+          var parsed = JSON.parse(dataNode.textContent);
+          if (parsed && Array.isArray(parsed.products) && parsed.products.length) {
+            data.products = parsed.products;
+          }
+        } catch (error) {}
+      }
+
+      var productRoot = document.querySelector("[data-products]");
+      if (productRoot) {
+        productRoot.innerHTML = "";
+        data.products.forEach(function (product) {
+          productRoot.appendChild(productCard(product));
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

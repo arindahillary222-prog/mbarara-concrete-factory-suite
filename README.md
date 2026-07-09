@@ -31,6 +31,9 @@ All currency values are in **UGX only**.
 - `apps/concrete-factory-erp-system`  
   Standalone ERP module covering sales, inventory, production, quality control, customers, suppliers, expenses, and reports.
 
+- `apps/smallbiz-automation-guide-landing`  
+  Separate Gumroad/Netlify landing page for the SmallBiz Automation Guide business. Includes `profile.html` for Gumroad custom profile use, `index.html` for Netlify, and a promotion playbook for getting small-business automation clients.
+
 - `database/001_initial_schema.sql`  
   PostgreSQL-ready schema for future ERP integration.
 
