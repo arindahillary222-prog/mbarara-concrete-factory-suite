@@ -3,7 +3,7 @@ export const IS_UNBS_CERTIFIED = false;
 export const companyProfile = {
   name: "Mbarara Integrated Concrete Products Factory",
   tagline: "Precision concrete products, direct-to-site delivery, and disciplined batch quality control.",
-  directorName: "Arinda Hillary",
+  directorName: "Hillary Arindamukama",
   directorTitle: "Founder & Managing Director",
   email: "arindahillary222@gmail.com",
   whatsappGermany: "+4915751996877",

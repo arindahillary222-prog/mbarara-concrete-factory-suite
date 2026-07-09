@@ -8,13 +8,17 @@ import {
   CheckCircle2,
   ClipboardList,
   CreditCard,
+  Download,
   Filter,
+  FileText,
   Images,
   Mail,
   MapPin,
   MessageCircle,
   PackageCheck,
   Phone,
+  PlayCircle,
+  Presentation,
   QrCode,
   ShieldCheck,
   ShoppingCart,
@@ -95,6 +99,51 @@ const imageByCategory: Record<string, string> = {
 };
 
 const catalogueViewCount = 10;
+
+const fundingDownloads = [
+  {
+    title: "Complete Funding Pack",
+    detail: "ZIP bundle with the pitch deck, one-page summary, UGX 130M budget, data file, script, and 3-minute video.",
+    href: "/funding-pack/Mbarara_Concrete_Factory_COMPLETE_Funding_Pack.zip",
+    icon: Download,
+  },
+  {
+    title: "10-Slide Pitch Deck",
+    detail: "Investor deck in editable PowerPoint format plus a PDF copy for easy sharing.",
+    href: "/funding-pack/Mbarara_Concrete_Factory_Investor_Pitch_Deck.pptx",
+    icon: Presentation,
+  },
+  {
+    title: "Pitch Deck PDF",
+    detail: "PDF version of the 10-slide funding presentation.",
+    href: "/funding-pack/Mbarara_Concrete_Factory_Investor_Pitch_Deck.pdf",
+    icon: FileText,
+  },
+  {
+    title: "One-Page Summary",
+    detail: "Concise founder story, Phase 1 plan, financial snapshot, links, and disclaimer.",
+    href: "/funding-pack/Mbarara_Concrete_Factory_One_Page_Funding_Summary.pdf",
+    icon: FileText,
+  },
+  {
+    title: "UGX 130M Phase 1 Budget",
+    detail: "Exact starter budget: UGX 128M essential startup cost plus UGX 2M protected buffer.",
+    href: "/funding-pack/Mbarara_Concrete_Factory_UGX_130M_Phase_1_Budget.pdf",
+    icon: ClipboardList,
+  },
+  {
+    title: "3-Minute Funding Video",
+    detail: "US English narrated video explaining the project, model, risks, and funding ask.",
+    href: "/funding-pack/Mbarara_Concrete_Factory_3_Minute_Funding_Pitch.mp4",
+    icon: PlayCircle,
+  },
+  {
+    title: "Master PDF Report",
+    detail: "Full project report covering the financial simulator, ERP, inventory, QC, market intelligence, risks, and roadmap.",
+    href: "/Mbarara_Integrated_Concrete_Factory_Master_Report.pdf",
+    icon: FileText,
+  },
+];
 
 function slugifyAsset(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -303,6 +352,7 @@ function PublicHeader() {
           <a href="#catalogue-gallery" className="rounded-md px-3 py-2 hover:bg-slate-100">Catalogue</a>
           <a href="#payments" className="rounded-md px-3 py-2 hover:bg-slate-100">Payments</a>
           <a href="#qr" className="rounded-md px-3 py-2 hover:bg-slate-100">QR Code</a>
+          <a href="#funding-pack" className="rounded-md px-3 py-2 hover:bg-slate-100">Funding Pack</a>
           <a href="#founder" className="rounded-md px-3 py-2 hover:bg-slate-100">Founder</a>
           <a href="#inquiry" className="rounded-md bg-slate-950 px-4 py-2 text-white hover:bg-slate-800">Contact</a>
         </nav>
@@ -1328,11 +1378,66 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
         ))}
       </section>
 
+      <section id="funding-pack" className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,0.78fr)_minmax(0,1.22fr)]">
+          <div className="min-w-0">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">Investor funding pack</p>
+            <h2 className="mt-1 break-words text-2xl font-extrabold text-slate-950 sm:text-3xl">
+              Download the complete Phase 1 funding materials
+            </h2>
+            <p className="mt-3 text-sm leading-7 text-slate-600">
+              The package uses the agreed lean-launch model: UGX 130,000,000 starter budget, UGX 128,000,000 essential
+              Phase 1 startup cost, UGX 2,000,000 protected cash buffer, and a UGX 20,000,000 monthly profit target.
+            </p>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              {[
+                ["Funding ask", "UGX 130M"],
+                ["Phase 1 cost", "UGX 128M"],
+                ["Cash buffer", "UGX 2M"],
+                ["Model net profit", "UGX 36.09M/month"],
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-md bg-slate-50 p-4">
+                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">{label}</p>
+                  <p className="mt-1 text-xl font-extrabold text-slate-950">{value}</p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm font-semibold leading-6 text-slate-800">
+              Data confidence: market prices, supplier quotes, machinery costs, and competitor records must be re-verified
+              before investment decisions.
+            </p>
+          </div>
+          <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+            {fundingDownloads.map((download) => {
+              const Icon = download.icon;
+              return (
+                <a
+                  key={download.href}
+                  href={publicAsset(download.href)}
+                  download
+                  className="group min-w-0 rounded-lg border border-slate-200 bg-slate-50 p-4 transition hover:border-amber-400 hover:bg-amber-50"
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-slate-950 text-amber-400">
+                      <Icon size={20} />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block break-words text-sm font-extrabold text-slate-950">{download.title}</span>
+                      <span className="mt-1 block break-words text-xs leading-5 text-slate-600">{download.detail}</span>
+                    </span>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       <section id="founder" className="rounded-lg bg-white p-5 shadow-sm">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-center">
           <div className="rounded-lg bg-slate-100 p-4">
             <img
-              src={publicAsset(companyProfile.founderPortraitPath)}
+              src={publicAsset(companyProfile.managingDirectorAssetPath)}
               alt={`${companyProfile.directorName}, ${companyProfile.directorTitle}`}
               className="mx-auto w-full max-w-sm aspect-[9/16] object-contain object-top shadow-lg rounded-xl border border-slate-800 bg-slate-100"
             />

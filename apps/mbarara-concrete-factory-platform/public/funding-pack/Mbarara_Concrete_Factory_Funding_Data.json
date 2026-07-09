@@ -1,0 +1,137 @@
+{
+  "project": "Mbarara Integrated Concrete Products Factory",
+  "founder": "Hillary Arindamukama",
+  "currency": "UGX only",
+  "preparedDate": "2026-07-09",
+  "website": "https://mbarara-concrete-factory.netlify.app/",
+  "pdfReport": "https://mbarara-concrete-factory.netlify.app/Mbarara_Integrated_Concrete_Factory_Master_Report.pdf",
+  "phaseOneBudget": [
+    [
+      "Semi-automatic block/paver machine, mixer, vibrator",
+      45000000,
+      "Essential quotation required"
+    ],
+    [
+      "Starter moulds: 6-inch, 8-inch, solid, 60 mm, 80 mm, kerbstone",
+      14000000,
+      "Essential only"
+    ],
+    [
+      "Site preparation, curing yard, drainage, basic shed works",
+      14000000,
+      "Lean starter works"
+    ],
+    [
+      "Electrical and water connection setup",
+      7000000,
+      "Essential utilities"
+    ],
+    [
+      "Pallets, wheelbarrows, hand tools, racks, safety gear",
+      8000000,
+      "Starter handling"
+    ],
+    [
+      "Starter raw materials and packaging",
+      24000000,
+      "Working stock"
+    ],
+    [
+      "Permits, basic laboratory tools, compliance and safety",
+      4000000,
+      "Basic QC only"
+    ],
+    [
+      "Launch labour, security, administration",
+      7000000,
+      "Opening month reserve"
+    ],
+    [
+      "Sales, local transport, customer visits",
+      3000000,
+      "Launch campaign"
+    ],
+    [
+      "Unallocated cash buffer",
+      2000000,
+      "Do not spend unless necessary"
+    ]
+  ],
+  "financialModel": {
+    "starterBudgetUgx": 130000000,
+    "phaseOneStartupCostUgx": 128000000,
+    "cashBufferUgx": 2000000,
+    "monthlyRevenueUgx": 140020000,
+    "monthlyProductionCostUgx": 89827422,
+    "monthlyGrossProfitUgx": 50192578,
+    "monthlyExpensesUgx": 14100000,
+    "monthlyNetProfitUgx": 36092578,
+    "targetMonthlyProfitUgx": 20000000,
+    "targetReached": true,
+    "breakEvenRevenueUgx": 39334142,
+    "annualizedRoiPct": 338.4,
+    "workingDaysPerMonth": 26
+  },
+  "unitCosts": [
+    [
+      "6-inch hollow blocks",
+      2600,
+      1722,
+      878,
+      "Estimated"
+    ],
+    [
+      "8-inch hollow blocks",
+      3400,
+      2164,
+      1236,
+      "Estimated"
+    ],
+    [
+      "solid blocks",
+      3000,
+      1960,
+      1040,
+      "Estimated"
+    ],
+    [
+      "60 mm pavers",
+      2400,
+      2036,
+      364,
+      "Quotation Required"
+    ],
+    [
+      "80 mm pavers",
+      3200,
+      2308,
+      892,
+      "Quotation Required"
+    ],
+    [
+      "kerbstones",
+      18000,
+      8891,
+      9109,
+      "Estimated"
+    ]
+  ],
+  "phaseOneProducts": [
+    "6-inch hollow blocks",
+    "8-inch hollow blocks",
+    "solid blocks",
+    "60 mm pavers",
+    "80 mm pavers",
+    "kerbstones"
+  ],
+  "deferredExpansionItems": [
+    "Ready-mix batching plant and transit mixers",
+    "Culvert production line and lifting equipment",
+    "Drainage channel mould expansion",
+    "Grass/permeable and cobblestone paver moulds",
+    "Dedicated delivery truck purchase",
+    "Advanced laboratory equipment",
+    "Second production line and regional depots"
+  ],
+  "dataConfidenceNotice": "Market prices, supplier quotes and competitor records remain Estimated or Quotation Required until re-verified before investment decisions."
+}

@@ -37,6 +37,9 @@ All currency values are in **UGX only**.
 - `reports-and-media/`  
   Investor PDF reports, merged prompt coverage report, the US English 30-minute explainer video, the US English walkthrough video, and deployment notes.
 
+- `apps/mbarara-concrete-factory-platform/public/funding-pack/`  
+  Serious investor funding pack for website downloads and outreach: 10-slide pitch deck, pitch deck PDF, one-page summary, UGX 130M Phase 1 budget, founder story/script, data file, complete ZIP bundle, and 3-minute US English funding video.
+
 ## Local setup
 
 Main platform:
