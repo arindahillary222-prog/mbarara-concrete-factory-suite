@@ -33,7 +33,7 @@
     ],
     [
       "Starter raw materials and packaging",
-      24000000,
+      26000000,
       "Working stock"
     ],
     [
@@ -61,58 +61,60 @@
     "starterBudgetUgx": 130000000,
     "phaseOneStartupCostUgx": 128000000,
     "cashBufferUgx": 2000000,
+    "cementBagPriceUgx": 36000,
+    "dieselPricePerLitreUgx": 6100,
     "monthlyRevenueUgx": 140020000,
-    "monthlyProductionCostUgx": 89827422,
-    "monthlyGrossProfitUgx": 50192578,
+    "monthlyProductionCostUgx": 93456422,
+    "monthlyGrossProfitUgx": 46563578,
     "monthlyExpensesUgx": 14100000,
-    "monthlyNetProfitUgx": 36092578,
+    "monthlyNetProfitUgx": 32463578,
     "targetMonthlyProfitUgx": 20000000,
     "targetReached": true,
-    "breakEvenRevenueUgx": 39334142,
-    "annualizedRoiPct": 338.4,
+    "breakEvenRevenueUgx": 42399706,
+    "annualizedRoiPct": 304.3,
     "workingDaysPerMonth": 26
   },
   "unitCosts": [
     [
       "6-inch hollow blocks",
       2600,
-      1722,
-      878,
+      1791,
+      809,
       "Estimated"
     ],
     [
       "8-inch hollow blocks",
       3400,
-      2164,
-      1236,
+      2259,
+      1141,
       "Estimated"
     ],
     [
       "solid blocks",
       3000,
-      1960,
-      1040,
+      2546,
+      454,
       "Estimated"
     ],
     [
       "60 mm pavers",
       2400,
-      2036,
-      364,
+      2106,
+      294,
       "Quotation Required"
     ],
     [
       "80 mm pavers",
       3200,
-      2308,
-      892,
+      2394,
+      806,
       "Quotation Required"
     ],
     [
       "kerbstones",
       18000,
-      8891,
-      9109,
+      9236,
+      8764,
       "Estimated"
     ]
   ],

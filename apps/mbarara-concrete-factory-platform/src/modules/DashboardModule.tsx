@@ -25,6 +25,9 @@ import { formatUGX, numberFormat } from "../lib/calculations";
 
 const colors = ["#17324d", "#2f7d5b", "#b7842f", "#a44a3f", "#3b6ea8", "#6b7280"];
 const phaseOneBudgetTotal = phaseOneBudgetItems.reduce((sum, row) => sum + row.amountUgx, 0);
+const essentialPhaseOneSpend = phaseOneBudgetItems
+  .filter((row) => !row.item.toLowerCase().includes("buffer"))
+  .reduce((sum, row) => sum + row.amountUgx, 0);
 
 export function DashboardModule({ state, erp }: { state: AppState; erp: ErpComputed }) {
   const lowStock = erp.inventory.filter((item) => item.lowStock).length;
@@ -120,9 +123,9 @@ export function DashboardModule({ state, erp }: { state: AppState; erp: ErpCompu
           <div className="space-y-3 text-sm leading-6 text-slate-700">
             <p>
               The model is now constrained to a UGX 130,000,000 Phase 1 launch. It commits{" "}
-              <span className="font-semibold text-factory-navy">{formatUGX(phaseOneBudgetTotal)}</span> to essential equipment, starter moulds, site works,
-              basic QC, raw materials, local sales, and working capital, leaving a{" "}
-              <span className="font-semibold text-factory-navy">{formatUGX(erp.financials.budgetSurplusUgx)}</span> buffer before expansion.
+              <span className="font-semibold text-factory-navy">{formatUGX(essentialPhaseOneSpend)}</span> to essential equipment, starter moulds, site works,
+              basic QC, raw materials, local sales, and working capital, while protecting a{" "}
+              <span className="font-semibold text-factory-navy">{formatUGX(erp.financials.budgetSurplusUgx)}</span> cash buffer before expansion.
             </p>
             <p>
               The lean model currently indicates the UGX 20,000,000 monthly profit target is{" "}
@@ -151,7 +154,7 @@ export function DashboardModule({ state, erp }: { state: AppState; erp: ErpCompu
       </section>
 
       <section className="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
-        <Panel title="UGX 130M Phase 1 Budget Allocation">
+        <Panel title={`UGX 130M Phase 1 Budget Allocation (${formatUGX(phaseOneBudgetTotal)} Total)`}>
           <DataTable
             headers={["Essential item", "Amount", "Status"]}
             rows={phaseOneBudgetItems.map((row) => [row.item, formatUGX(row.amountUgx), row.status])}

@@ -28,6 +28,7 @@ import {
   UploadCloud,
 } from "lucide-react";
 import { companyProfile, contactLinks, IS_UNBS_CERTIFIED } from "../config/site";
+import { computeErp } from "../lib/calculations";
 import type { AppState, Product } from "../types";
 
 type ProductCategory = Product["category"];
@@ -1089,6 +1090,7 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
     const mapped = state.products.map(toWebsiteProduct);
     return [...mapped, ...additionalProducts].sort((a, b) => a.name.localeCompare(b.name));
   }, [state.products]);
+  const financials = useMemo(() => computeErp(state).financials, [state]);
 
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<"all" | ProductCategory>("all");
@@ -1394,7 +1396,7 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
                 ["Funding ask", "UGX 130M"],
                 ["Phase 1 cost", "UGX 128M"],
                 ["Cash buffer", "UGX 2M"],
-                ["Model net profit", "UGX 36.09M/month"],
+                ["Model net profit", `${formatUgx.format(financials.netProfitUgx)}/month`],
               ].map(([label, value]) => (
                 <div key={label} className="rounded-md bg-slate-50 p-4">
                   <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">{label}</p>
@@ -1403,8 +1405,8 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
               ))}
             </div>
             <p className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm font-semibold leading-6 text-slate-800">
-              Data confidence: market prices, supplier quotes, machinery costs, and competitor records must be re-verified
-              before investment decisions.
+              Data confidence: current public model uses updated cement and diesel assumptions, but market prices, supplier
+              quotes, machinery costs, and competitor records must be re-verified before investment decisions.
             </p>
           </div>
           <div className="grid min-w-0 gap-3 sm:grid-cols-2">
