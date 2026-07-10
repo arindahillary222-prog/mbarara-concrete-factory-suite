@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   BadgeCheck,
@@ -29,6 +29,8 @@ import {
 } from "lucide-react";
 import { companyProfile, contactLinks, IS_UNBS_CERTIFIED } from "../config/site";
 import { computeErp, formatUGX } from "../lib/calculations";
+import type { DisplayLanguageCode } from "../lib/localization";
+import { getPublicWebsiteCopy, type PublicWebsiteCopy } from "../lib/websiteCopy";
 import type { AppState, Product } from "../types";
 
 type ProductCategory = Product["category"];
@@ -64,6 +66,19 @@ interface CatalogueImage {
   sourceStatus: "Uploaded product photo" | "Awaiting upload" | "Catalogue fallback";
   matchNote?: string;
 }
+
+interface OwnerPhotoSlot {
+  src: string;
+  label: string;
+  fileName: string;
+  updatedAt: string;
+}
+
+type OwnerCataloguePhotos = Record<string, Record<number, OwnerPhotoSlot>>;
+
+const ownerPhotoStorageKey = "mbarara-owner-catalogue-photos-v1";
+const ownerModeStorageKey = "mbarara-owner-photo-mode-v1";
+const ownerPassphraseHash = "2135406492";
 
 const productCodes: Record<string, string> = {
   "4-inch hollow blocks": "B075",
@@ -216,9 +231,10 @@ function generatedCatalogueImage(product: WebsiteProduct, index: number): Catalo
   };
 }
 
-function catalogueImagesForProduct(product: WebsiteProduct): CatalogueImage[] {
+function catalogueImagesForProduct(product: WebsiteProduct, ownerPhotos: OwnerCataloguePhotos = {}): CatalogueImage[] {
   const generated = Array.from({ length: catalogueViewCount }, (_, index) => generatedCatalogueImage(product, index));
   const uploadedSlots = uploadedCataloguePhotoSlots[product.name] ?? [];
+  const ownerSlots = ownerPhotos[product.id] ?? {};
 
   uploadedSlots.forEach((slot, index) => {
     if (index >= generated.length) return;
@@ -227,6 +243,19 @@ function catalogueImagesForProduct(product: WebsiteProduct): CatalogueImage[] {
       id: `${product.id}-uploaded-photo-${index + 1}`,
       fallbackSrc: generated[index].src,
       sourceStatus: "Awaiting upload",
+    };
+  });
+
+  Object.entries(ownerSlots).forEach(([indexValue, slot]) => {
+    const index = Number(indexValue);
+    if (!Number.isInteger(index) || index < 0 || index >= generated.length) return;
+    generated[index] = {
+      id: `${product.id}-owner-photo-${index + 1}`,
+      src: slot.src,
+      fallbackSrc: generated[index].fallbackSrc ?? generated[index].src,
+      label: slot.label || generated[index].label,
+      sourceStatus: "Uploaded product photo",
+      matchNote: `Owner uploaded photo: ${slot.fileName}`,
     };
   });
 
@@ -312,22 +341,47 @@ const additionalProducts: WebsiteProduct[] = [
 ];
 
 function publicAsset(path: string) {
+  if (/^(data:|blob:|https?:)/i.test(path)) return path;
   return `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`;
 }
 
-function GlobalDeliveryBanner() {
+function hashOwnerPassphrase(value: string) {
+  let hash = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
+  }
+  return String(hash);
+}
+
+function loadOwnerPhotos(): OwnerCataloguePhotos {
+  if (typeof window === "undefined") return {};
+  try {
+    return JSON.parse(window.localStorage.getItem(ownerPhotoStorageKey) ?? "{}") as OwnerCataloguePhotos;
+  } catch {
+    return {};
+  }
+}
+
+function saveOwnerPhotos(photos: OwnerCataloguePhotos) {
+  if (typeof window !== "undefined") window.localStorage.setItem(ownerPhotoStorageKey, JSON.stringify(photos));
+}
+
+function shouldShowOwnerGate() {
+  if (typeof window === "undefined") return false;
+  const params = new URLSearchParams(window.location.search);
+  return params.get("owner") === "photos" || window.localStorage.getItem(ownerModeStorageKey) === "true";
+}
+
+function GlobalDeliveryBanner({ copy }: { copy: PublicWebsiteCopy }) {
   return (
     <div className="flex w-full max-w-full items-center justify-center gap-2 bg-amber-500 px-3 py-2 text-center text-sm font-bold tracking-wide text-slate-950 shadow-md sm:px-4">
       <span aria-hidden="true">🚚</span>
-      <span className="min-w-0 text-balance leading-5">
-        FREE SITE DELIVERY | Complimentary Fleet Transportation Directly To Your Construction Site Across the Mbarara Region
-        (On Qualifying Bulk Orders).
-      </span>
+      <span className="min-w-0 text-balance leading-5">{copy.deliveryBanner}</span>
     </div>
   );
 }
 
-function PublicHeader() {
+function PublicHeader({ copy }: { copy: PublicWebsiteCopy }) {
   return (
     <header className="sticky top-0 z-40 w-full max-w-full border-b border-slate-200 bg-white/95 backdrop-blur">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-3 py-4 sm:px-4 lg:px-6">
@@ -338,18 +392,18 @@ function PublicHeader() {
           <span className="min-w-0">
             <span className="block break-words text-base font-extrabold leading-snug text-slate-950">{companyProfile.name}</span>
             <span className="block break-words text-xs font-bold uppercase tracking-[0.12em] text-amber-600">
-              Factory-direct concrete supply
+              {copy.brandTag}
             </span>
           </span>
         </a>
         <nav className="touch-scroll flex max-w-full flex-wrap items-center justify-start gap-2 overflow-x-auto pb-1 text-sm font-bold text-slate-700 sm:justify-end">
-          <a href="#products" className="rounded-md px-3 py-2 hover:bg-slate-100">Products</a>
-          <a href="#catalogue-gallery" className="rounded-md px-3 py-2 hover:bg-slate-100">Catalogue</a>
-          <a href="#payments" className="rounded-md px-3 py-2 hover:bg-slate-100">Payments</a>
-          <a href="#qr" className="rounded-md px-3 py-2 hover:bg-slate-100">QR Code</a>
-          <a href="#funding-pack" className="rounded-md px-3 py-2 hover:bg-slate-100">Funding Pack</a>
-          <a href="#founder" className="rounded-md px-3 py-2 hover:bg-slate-100">Founder</a>
-          <a href="#inquiry" className="rounded-md bg-slate-950 px-4 py-2 text-white hover:bg-slate-800">Contact</a>
+          <a href="#products" className="rounded-md px-3 py-2 hover:bg-slate-100">{copy.navProducts}</a>
+          <a href="#catalogue-gallery" className="rounded-md px-3 py-2 hover:bg-slate-100">{copy.navCatalogue}</a>
+          <a href="#payments" className="rounded-md px-3 py-2 hover:bg-slate-100">{copy.navPayments}</a>
+          <a href="#qr" className="rounded-md px-3 py-2 hover:bg-slate-100">{copy.navQr}</a>
+          <a href="#funding-pack" className="rounded-md px-3 py-2 hover:bg-slate-100">{copy.navFunding}</a>
+          <a href="#founder" className="rounded-md px-3 py-2 hover:bg-slate-100">{copy.navFounder}</a>
+          <a href="#inquiry" className="rounded-md bg-slate-950 px-4 py-2 text-white hover:bg-slate-800">{copy.navContact}</a>
         </nav>
       </div>
     </header>
@@ -451,7 +505,7 @@ function buildWhatsAppCheckoutPayload({
   ].join("\n");
 }
 
-function BasketSummary({ items }: { items: BasketItem[] }) {
+function BasketSummary({ items, copy }: { items: BasketItem[]; copy: PublicWebsiteCopy }) {
   const total = items.reduce((sum, item) => sum + item.quantity * item.product.priceUgx, 0);
   const totalWeight = items.reduce((sum, item) => sum + item.quantity * item.product.weightKgPerUnit, 0);
   const deliveryThresholdKg = 10000;
@@ -461,8 +515,8 @@ function BasketSummary({ items }: { items: BasketItem[] }) {
     totalWeight >= 30000
       ? "30-tonne tipper planning required."
       : totalWeight >= 10000
-        ? "Free factory tipper delivery bracket unlocked."
-        : "Build basket weight to unlock free site delivery.";
+        ? copy.deliveryUnlocked
+        : copy.cartProgressTitle;
 
   const checkoutPayload = buildWhatsAppCheckoutPayload({ items, total, totalWeight, deliveryThresholdKg });
   const orderText = encodeURIComponent(checkoutPayload);
@@ -471,8 +525,8 @@ function BasketSummary({ items }: { items: BasketItem[] }) {
     <aside className="sticky top-4 w-full max-w-full rounded-lg border border-slate-800 bg-slate-950 p-5 text-white shadow-xl">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-400">Live Basket</p>
-          <h3 className="mt-1 break-words text-xl font-extrabold">Quote & Delivery Planner</h3>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-400">{copy.liveBasket}</p>
+          <h3 className="mt-1 break-words text-xl font-extrabold">{copy.quotePlanner}</h3>
         </div>
         <ShoppingCart className="text-amber-400" size={28} />
       </div>
@@ -480,7 +534,7 @@ function BasketSummary({ items }: { items: BasketItem[] }) {
       <div className="mt-5 space-y-3">
         {items.length === 0 ? (
           <p className="rounded-md border border-slate-700 bg-slate-900 p-3 text-sm text-slate-300">
-            Add products to build a quotation and send it directly by WhatsApp.
+            {copy.basketEmpty}
           </p>
         ) : (
           items.map((item) => (
@@ -504,7 +558,7 @@ function BasketSummary({ items }: { items: BasketItem[] }) {
 
       <div className="mt-5 rounded-md border border-amber-400/30 bg-amber-400/10 p-4">
         <div className="flex items-center justify-between text-sm font-bold">
-          <span>Delivery progress</span>
+          <span>{copy.deliveryProgress}</span>
           <span>{progress.toFixed(0)}%</span>
         </div>
         <div className="mt-3 h-3 overflow-hidden rounded-full bg-slate-800">
@@ -512,18 +566,18 @@ function BasketSummary({ items }: { items: BasketItem[] }) {
         </div>
         <p className="mt-3 text-sm text-slate-200">
           {remainingKg > 0
-            ? `Add approximately ${(remainingKg / 13).toFixed(0)} more 6-inch blocks to unlock 100% Free Factory Tipper Delivery.`
+            ? `${copy.addBlocksPrefix} approximately ${(remainingKg / 13).toFixed(0)} ${copy.addBlocksSuffix}`
             : truckNotice}
         </p>
       </div>
 
       <dl className="mt-5 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
         <div className="rounded-md bg-white/8 p-3">
-          <dt className="text-slate-400">Basket value</dt>
+          <dt className="text-slate-400">{copy.basketValue}</dt>
           <dd className="mt-1 break-words font-extrabold text-amber-300">{formatUGX(total)}</dd>
         </div>
         <div className="rounded-md bg-white/8 p-3">
-          <dt className="text-slate-400">Weight</dt>
+          <dt className="text-slate-400">{copy.weight}</dt>
           <dd className="mt-1 font-extrabold">{(totalWeight / 1000).toFixed(2)} t</dd>
         </div>
       </dl>
@@ -537,21 +591,21 @@ function BasketSummary({ items }: { items: BasketItem[] }) {
           className="inline-flex items-center justify-center gap-2 rounded-md bg-amber-400 px-4 py-3 text-center text-sm font-extrabold text-slate-950 hover:bg-amber-300"
         >
           <MessageCircle size={18} />
-          Send order on WhatsApp
+          {copy.sendOrderWhatsapp}
         </a>
         <a
           href={`mailto:${companyProfile.email}?subject=${encodeURIComponent("Concrete product inquiry")}&body=${orderText}`}
           className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-600 px-4 py-3 text-center text-sm font-bold text-white hover:bg-white/10"
         >
           <Mail size={18} />
-          Email quotation request
+          {copy.emailQuotation}
         </a>
       </div>
     </aside>
   );
 }
 
-function LogisticsCapability({ basketWeightKg }: { basketWeightKg: number }) {
+function LogisticsCapability({ basketWeightKg, copy }: { basketWeightKg: number; copy: PublicWebsiteCopy }) {
   const thresholdKg = 10000;
   const progress = Math.min(100, (basketWeightKg / thresholdKg) * 100);
   const remainingBlocks = Math.max(0, Math.ceil((thresholdKg - basketWeightKg) / 13));
@@ -564,15 +618,15 @@ function LogisticsCapability({ basketWeightKg }: { basketWeightKg: number }) {
             <Truck size={28} />
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-400">Fleet capability</p>
-            <h2 className="break-words text-2xl font-extrabold">Our Dedicated Heavy Fleet Services</h2>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-400">{copy.fleetEyebrow}</p>
+            <h2 className="break-words text-2xl font-extrabold">{copy.fleetTitle}</h2>
           </div>
         </div>
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
           {[
-            ["Zero Haulier Fees", "Bulk orders qualify for factory-managed delivery."],
-            ["Direct-to-Site Crane/Tipper Delivery", "Dispatch planning for Mbarara regional projects."],
-            ["Real-Time Site-Arrival Dispatch", "Clear coordination before truck release."],
+            [copy.metricNoFees, copy.metricNoFeesBody],
+            [copy.metricDirectDelivery, copy.metricDirectDeliveryBody],
+            [copy.metricRealtime, copy.metricRealtimeBody],
           ].map(([title, body]) => (
             <div key={title} className="rounded-md bg-white p-4 text-slate-950">
               <p className="text-lg font-extrabold">{title}</p>
@@ -585,14 +639,14 @@ function LogisticsCapability({ basketWeightKg }: { basketWeightKg: number }) {
       <div className="min-w-0 rounded-lg border border-amber-400/40 bg-amber-400/10 p-6">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-300">Dynamic cart progress</p>
-            <h3 className="mt-1 break-words text-2xl font-extrabold">Free Delivery Unlock Meter</h3>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-300">{copy.cartProgressEyebrow}</p>
+            <h3 className="mt-1 break-words text-2xl font-extrabold">{copy.cartProgressTitle}</h3>
           </div>
           <Calculator className="text-amber-300" size={30} />
         </div>
         <div className="mt-8">
           <div className="flex items-center justify-between text-sm font-bold">
-            <span>{(basketWeightKg / 1000).toFixed(2)} tonnes loaded</span>
+            <span>{(basketWeightKg / 1000).toFixed(2)} {copy.tonnesLoaded}</span>
             <span>{progress.toFixed(0)}%</span>
           </div>
           <div className="mt-3 h-4 overflow-hidden rounded-full bg-slate-800">
@@ -600,8 +654,8 @@ function LogisticsCapability({ basketWeightKg }: { basketWeightKg: number }) {
           </div>
           <p className="mt-4 text-base font-semibold leading-7">
             {progress >= 100
-              ? "Free Factory Tipper Delivery unlocked for qualifying site radius."
-              : `Add ${remainingBlocks} more blocks to unlock 100% Free Factory Tipper Delivery!`}
+              ? copy.deliveryUnlocked
+              : `${copy.addBlocksPrefix} ${remainingBlocks} ${copy.addBlocksSuffix}`}
           </p>
         </div>
       </div>
@@ -609,7 +663,7 @@ function LogisticsCapability({ basketWeightKg }: { basketWeightKg: number }) {
   );
 }
 
-function MobileMoneyAndQr({ basketTotal, deliveryCost }: { basketTotal: number; deliveryCost: number }) {
+function MobileMoneyAndQr({ basketTotal, deliveryCost, copy }: { basketTotal: number; deliveryCost: number; copy: PublicWebsiteCopy }) {
   const payableTotal = basketTotal + deliveryCost;
 
   return (
@@ -620,8 +674,8 @@ function MobileMoneyAndQr({ basketTotal, deliveryCost }: { basketTotal: number; 
             <CreditCard size={28} />
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">Mobile Money Payments</p>
-            <h2 className="break-words text-2xl font-extrabold text-slate-950 sm:text-3xl">Pay by MTN Mobile Money or Airtel Money</h2>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">{copy.mobileMoneyEyebrow}</p>
+            <h2 className="break-words text-2xl font-extrabold text-slate-950 sm:text-3xl">{copy.mobileMoneyTitle}</h2>
           </div>
         </div>
 
@@ -636,11 +690,11 @@ function MobileMoneyAndQr({ basketTotal, deliveryCost }: { basketTotal: number; 
             </div>
             <div className="p-5">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-600">Payment receiving number</p>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-600">{copy.receivingNumber}</p>
                 <p className="mt-1 break-words text-2xl font-extrabold text-slate-950 sm:text-3xl">{companyProfile.mtnMobileMoney}</p>
               </div>
               <p className="mt-4 text-sm font-semibold leading-6 text-slate-700">
-                Use this number only after the factory confirms product availability, delivery date, and final invoice amount.
+                {copy.mtnInstruction}
               </p>
             </div>
           </div>
@@ -655,8 +709,8 @@ function MobileMoneyAndQr({ basketTotal, deliveryCost }: { basketTotal: number; 
             </div>
             <div className="p-5">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-600">Airtel payment route</p>
-                <p className="mt-1 break-words text-2xl font-extrabold text-slate-950">Accepted after confirmation</p>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-600">{copy.airtelRoute}</p>
+                <p className="mt-1 break-words text-2xl font-extrabold text-slate-950">{copy.acceptedAfterConfirmation}</p>
               </div>
               <p className="mt-4 text-sm font-semibold leading-6 text-slate-700">{companyProfile.airtelMoneyNote}</p>
             </div>
@@ -664,24 +718,23 @@ function MobileMoneyAndQr({ basketTotal, deliveryCost }: { basketTotal: number; 
         </div>
 
         <div className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-5">
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Current basket payment guide</p>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">{copy.basketPaymentGuide}</p>
           <div className="mt-3 grid gap-3 sm:grid-cols-3">
             <div className="rounded-md bg-white p-4 shadow-sm">
-              <p className="text-xs font-bold uppercase text-slate-500">Products</p>
+              <p className="text-xs font-bold uppercase text-slate-500">{copy.products}</p>
               <p className="mt-1 break-words text-lg font-extrabold text-slate-950">{formatUGX(basketTotal)}</p>
             </div>
             <div className="rounded-md bg-white p-4 shadow-sm">
-              <p className="text-xs font-bold uppercase text-slate-500">Delivery</p>
+              <p className="text-xs font-bold uppercase text-slate-500">{copy.delivery}</p>
               <p className="mt-1 break-words text-lg font-extrabold text-slate-950">{formatUGX(deliveryCost)}</p>
             </div>
             <div className="rounded-md bg-white p-4 shadow-sm">
-              <p className="text-xs font-bold uppercase text-slate-500">Estimated payable</p>
+              <p className="text-xs font-bold uppercase text-slate-500">{copy.estimatedPayable}</p>
               <p className="mt-1 break-words text-lg font-extrabold text-amber-700">{formatUGX(payableTotal)}</p>
             </div>
           </div>
           <p className="mt-4 text-sm leading-6 text-slate-600">
-            Payments must match a confirmed invoice. This protects buyers from sending money before stock, delivery radius,
-            and truck allocation are confirmed.
+            {copy.paymentSafety}
           </p>
         </div>
       </div>
@@ -690,8 +743,8 @@ function MobileMoneyAndQr({ basketTotal, deliveryCost }: { basketTotal: number; 
         <div className="flex items-center gap-3">
           <QrCode className="text-amber-400" size={30} />
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-400">Scan and share</p>
-            <h3 className="text-2xl font-extrabold">Website QR Code</h3>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-400">{copy.scanShare}</p>
+            <h3 className="text-2xl font-extrabold">{copy.qrTitle}</h3>
           </div>
         </div>
         <div className="mt-5 rounded-lg bg-white p-4">
@@ -702,8 +755,7 @@ function MobileMoneyAndQr({ basketTotal, deliveryCost }: { basketTotal: number; 
           />
         </div>
         <p className="mt-4 text-sm font-semibold leading-6 text-slate-300">
-          Scan to open the permanent public website with products, catalogue visuals, inquiry form, Mobile Money details,
-          WhatsApp links, PDF report, and videos.
+          {copy.qrBody}
         </p>
         <p className="mt-3 break-words text-sm font-semibold leading-6 text-amber-200">{companyProfile.publicWebsiteUrl}</p>
         <a
@@ -712,7 +764,7 @@ function MobileMoneyAndQr({ basketTotal, deliveryCost }: { basketTotal: number; 
           rel="noreferrer"
           className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md bg-amber-400 px-4 py-3 text-center text-sm font-extrabold text-slate-950 hover:bg-amber-300"
         >
-          Open public website
+          {copy.openPublicWebsite}
           <ArrowRight size={17} />
         </a>
       </div>
@@ -723,9 +775,11 @@ function MobileMoneyAndQr({ basketTotal, deliveryCost }: { basketTotal: number; 
 function QuantityPlanner({
   selected,
   onAdd,
+  copy,
 }: {
   selected: WebsiteProduct;
   onAdd: (item: BasketItem) => void;
+  copy: PublicWebsiteCopy;
 }) {
   const [unitQty, setUnitQty] = useState("500");
   const [length, setLength] = useState("10");
@@ -739,19 +793,19 @@ function QuantityPlanner({
     if (selected.unit === "m2") {
       quantity = Number(length) * Number(width);
       if (!Number.isFinite(quantity) || quantity <= 0) {
-        setError("Enter a valid length and width for the paving area.");
+        setError(copy.lengthError);
         return;
       }
     } else if (selected.unit === "m3") {
       quantity = Number(volume);
       if (!Number.isFinite(quantity) || quantity <= 0) {
-        setError("Enter a valid ready-mix volume.");
+        setError(copy.volumeError);
         return;
       }
     } else {
       quantity = Number(unitQty);
       if (!Number.isInteger(quantity) || quantity <= 0) {
-        setError("Blocks, kerbs, drainage channels, and culverts require whole-number quantities.");
+        setError(copy.unitError);
         return;
       }
     }
@@ -763,10 +817,10 @@ function QuantityPlanner({
     <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">Material calculator</p>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">{copy.materialCalculator}</p>
           <h3 className="mt-1 text-xl font-extrabold text-slate-950">{selected.name}</h3>
           <p className="mt-1 text-sm text-slate-600">
-            {selected.code} | {formatUGX(selected.priceUgx)} per {selected.unit}
+            {selected.code} | {formatUGX(selected.priceUgx)} {copy.per} {selected.unit}
           </p>
         </div>
         <span className="rounded-md bg-slate-100 px-3 py-2 text-xs font-bold uppercase text-slate-700">
@@ -778,7 +832,7 @@ function QuantityPlanner({
         {selected.unit === "m2" ? (
           <>
             <label className="grid gap-2 text-sm font-semibold text-slate-700">
-              Length in metres
+              {copy.lengthMetres}
               <input
                 value={length}
                 onChange={(event) => setLength(event.target.value)}
@@ -789,7 +843,7 @@ function QuantityPlanner({
               />
             </label>
             <label className="grid gap-2 text-sm font-semibold text-slate-700">
-              Width in metres
+              {copy.widthMetres}
               <input
                 value={width}
                 onChange={(event) => setWidth(event.target.value)}
@@ -809,7 +863,7 @@ function QuantityPlanner({
         ) : selected.unit === "m3" ? (
           <>
             <label className="grid gap-2 text-sm font-semibold text-slate-700">
-              Concrete class
+              {copy.concreteClass}
               <select
                 value={concreteClass}
                 onChange={(event) => setConcreteClass(event.target.value)}
@@ -821,7 +875,7 @@ function QuantityPlanner({
               </select>
             </label>
             <label className="grid gap-2 text-sm font-semibold text-slate-700">
-              Volume in m3
+              {copy.concreteVolume}
               <input
                 value={volume}
                 onChange={(event) => setVolume(event.target.value)}
@@ -841,7 +895,7 @@ function QuantityPlanner({
         ) : (
           <>
             <label className="grid gap-2 text-sm font-semibold text-slate-700 md:col-span-2">
-              Quantity required
+              {copy.quantityUnits}
               <input
                 value={unitQty}
                 onChange={(event) => setUnitQty(event.target.value)}
@@ -868,7 +922,7 @@ function QuantityPlanner({
         className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-md bg-slate-950 px-4 py-3 text-sm font-extrabold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
       >
         <ShoppingCart size={18} />
-        Add to quotation basket
+        {copy.addToBasket}
       </button>
     </div>
   );
@@ -878,12 +932,22 @@ function ProductCatalogueGallery({
   products,
   selected,
   onSelect,
+  copy,
+  ownerMode,
+  ownerPhotos,
+  onOwnerPhotoUpload,
+  onOwnerPhotoRemove,
 }: {
   products: WebsiteProduct[];
   selected: WebsiteProduct;
   onSelect: (product: WebsiteProduct) => void;
+  copy: PublicWebsiteCopy;
+  ownerMode: boolean;
+  ownerPhotos: OwnerCataloguePhotos;
+  onOwnerPhotoUpload: (productId: string, index: number, file: File) => void;
+  onOwnerPhotoRemove: (productId: string, index: number) => void;
 }) {
-  const images = catalogueImagesForProduct(selected);
+  const images = catalogueImagesForProduct(selected, ownerPhotos);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const mainImage = images[selectedImageIndex] ?? images[0];
   const otherImages = images.filter((_, index) => index !== selectedImageIndex);
@@ -892,19 +956,17 @@ function ProductCatalogueGallery({
     <section id="catalogue-gallery" className="max-w-full rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">Full product catalogue</p>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">{copy.fullCatalogue}</p>
           <h2 className="mt-1 break-words text-2xl font-extrabold text-slate-950 sm:text-3xl">
-            One main product photo, with more views on demand
+            {copy.galleryTitle}
           </h2>
           <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
-            Select a product below to view one clean display image first, then open the dropdown for the other nine
-            catalogue views. No third-party branded website photos are used here; replace catalogue visuals only with
-            factory-owned, licence-cleared, product-only, factory-only, or company-approved local team photos.
+            {copy.galleryBody}
           </p>
         </div>
         <div className="inline-flex items-center gap-2 rounded-md bg-slate-100 px-3 py-2 text-sm font-bold text-slate-700">
           <Images size={17} />
-          {products.length * catalogueViewCount} visuals
+          {products.length * catalogueViewCount} {copy.visuals}
         </div>
       </div>
 
@@ -939,7 +1001,7 @@ function ProductCatalogueGallery({
           />
           <figcaption className="flex flex-wrap items-center justify-between gap-3 px-4 py-4 text-sm font-bold text-slate-700">
             <span className="min-w-0 break-words">{mainImage.label}</span>
-            <span>Photo {selectedImageIndex + 1} of {catalogueViewCount}</span>
+            <span>{copy.photo} {selectedImageIndex + 1} {copy.of} {catalogueViewCount}</span>
           </figcaption>
           {mainImage.matchNote ? (
             <p className="border-t border-slate-200 px-4 py-3 text-sm font-semibold leading-6 text-slate-600">
@@ -949,10 +1011,10 @@ function ProductCatalogueGallery({
         </figure>
 
         <div className="min-w-0 rounded-lg border border-slate-200 bg-slate-50 p-5">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">Display control</p>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">{copy.displayControl}</p>
           <h3 className="mt-1 break-words text-2xl font-extrabold text-slate-950">{selected.name}</h3>
           <label className="mt-5 grid gap-2 text-sm font-semibold text-slate-700">
-            Choose display photo
+            {copy.choosePhoto}
             <select
               value={selectedImageIndex}
               onChange={(event) => setSelectedImageIndex(Number(event.target.value))}
@@ -960,15 +1022,47 @@ function ProductCatalogueGallery({
             >
               {images.map((image, index) => (
                 <option key={image.id} value={index}>
-                  Photo {index + 1}: {image.label}
+                  {copy.photo} {index + 1}: {image.label}
                 </option>
               ))}
             </select>
           </label>
 
+          {ownerMode ? (
+            <div className="mt-5 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+              <p className="text-sm font-extrabold text-emerald-900">{copy.ownerModeActive}</p>
+              <p className="mt-1 text-xs font-semibold leading-5 text-emerald-800">{copy.uploadHint}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-slate-950 px-4 py-3 text-sm font-bold text-white hover:bg-slate-800">
+                  <UploadCloud size={17} />
+                  {copy.replaceCurrentPhoto}
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    className="sr-only"
+                    onChange={(event) => {
+                      const file = event.target.files?.[0];
+                      if (file) onOwnerPhotoUpload(selected.id, selectedImageIndex, file);
+                      event.currentTarget.value = "";
+                    }}
+                  />
+                </label>
+                {ownerPhotos[selected.id]?.[selectedImageIndex] ? (
+                  <button
+                    type="button"
+                    onClick={() => onOwnerPhotoRemove(selected.id, selectedImageIndex)}
+                    className="rounded-md border border-emerald-700 px-4 py-3 text-sm font-bold text-emerald-900 hover:bg-white"
+                  >
+                    {copy.removeUploadedPhoto}
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
+
           <details className="mt-5 rounded-lg border border-slate-200 bg-white">
             <summary className="cursor-pointer px-4 py-3 text-sm font-extrabold text-slate-950">
-              See more catalogue photos
+              {copy.seeMorePhotos}
             </summary>
             <div className="grid gap-3 border-t border-slate-200 p-4 sm:grid-cols-2">
               {otherImages.map((image) => {
@@ -988,7 +1082,7 @@ function ProductCatalogueGallery({
                       className="aspect-[4/3] w-full bg-slate-200 object-cover"
                     />
                     <span className="block px-3 py-2 text-xs font-bold leading-5 text-slate-600">
-                      Photo {imageIndex + 1}: {image.label}
+                      {copy.photo} {imageIndex + 1}: {image.label}
                     </span>
                   </button>
                 );
@@ -997,8 +1091,7 @@ function ProductCatalogueGallery({
           </details>
 
           <p className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm font-semibold leading-6 text-slate-800">
-            Real buyer-facing photos should come from our factory, our customers with permission, or licensed suppliers.
-            Do not use another company&apos;s branded images as product evidence.
+            {copy.photoWarning}
           </p>
         </div>
       </div>
@@ -1010,18 +1103,23 @@ function ProductCard({
   product,
   onSelect,
   onViewGallery,
+  copy,
+  ownerPhotos,
 }: {
   product: WebsiteProduct;
   onSelect: (product: WebsiteProduct) => void;
   onViewGallery: (product: WebsiteProduct) => void;
+  copy: PublicWebsiteCopy;
+  ownerPhotos: OwnerCataloguePhotos;
 }) {
   const locked = product.availableStock === 0 || product.curingStatus !== "Released for Sale" || product.approvalState !== "Internal Pass";
+  const ownerMainPhoto = ownerPhotos[product.id]?.[0]?.src;
 
   return (
     <article className="group relative max-w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
       <div className="relative aspect-[4/3] overflow-hidden bg-slate-200">
         <FallbackImage
-          src={product.image}
+          src={ownerMainPhoto ?? product.image}
           fallbackSrc="/assets/images/product-blocks.png"
           alt={`${product.name} product visual`}
           className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
@@ -1032,7 +1130,7 @@ function ProductCard({
         {locked ? (
           <div className="absolute inset-0 flex items-center justify-center bg-slate-950/55 backdrop-blur-[2px]">
             <span className="rounded-md bg-white px-4 py-3 text-sm font-extrabold text-slate-950">
-              {product.availableStock === 0 ? "Out of Stock" : "In Curing / Quality Testing"}
+              {product.availableStock === 0 ? copy.outOfStock : copy.curing}
             </span>
           </div>
         ) : null}
@@ -1049,7 +1147,7 @@ function ProductCard({
         </div>
         <div className="mt-5 flex flex-wrap items-end justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Ex-works price</p>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">{copy.exWorksPrice}</p>
             <p className="break-words text-xl font-extrabold text-slate-950">{formatUGX(product.priceUgx)}</p>
           </div>
           <div className="grid min-w-[9rem] gap-2">
@@ -1058,7 +1156,7 @@ function ProductCard({
               onClick={() => onSelect(product)}
               className="inline-flex items-center justify-center gap-2 rounded-md bg-amber-400 px-4 py-3 text-sm font-extrabold text-slate-950 hover:bg-amber-300"
             >
-              Configure
+              {copy.configure}
               <ArrowRight size={17} />
             </button>
             <button
@@ -1070,7 +1168,7 @@ function ProductCard({
               className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50"
             >
               <Images size={17} />
-              Photos
+              {copy.photos}
             </button>
           </div>
         </div>
@@ -1079,7 +1177,8 @@ function ProductCard({
   );
 }
 
-export function PublicWebsiteModule({ state }: { state: AppState }) {
+export function PublicWebsiteModule({ state, displayLanguage }: { state: AppState; displayLanguage: DisplayLanguageCode }) {
+  const copy = getPublicWebsiteCopy(displayLanguage);
   const products = useMemo(() => {
     const mapped = state.products.map(toWebsiteProduct);
     return [...mapped, ...additionalProducts].sort((a, b) => a.name.localeCompare(b.name));
@@ -1095,6 +1194,59 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
   const [basket, setBasket] = useState<BasketItem[]>([]);
   const [paymentMode, setPaymentMode] = useState<"direct" | "credit">("direct");
   const [inquirySent, setInquirySent] = useState(false);
+  const [ownerGateVisible, setOwnerGateVisible] = useState(false);
+  const [ownerMode, setOwnerMode] = useState(false);
+  const [ownerPassphrase, setOwnerPassphrase] = useState("");
+  const [ownerPhotos, setOwnerPhotos] = useState<OwnerCataloguePhotos>(() => loadOwnerPhotos());
+
+  useEffect(() => {
+    const visible = shouldShowOwnerGate();
+    setOwnerGateVisible(visible);
+    setOwnerMode(typeof window !== "undefined" && window.localStorage.getItem(ownerModeStorageKey) === "true");
+  }, []);
+
+  function unlockOwnerMode() {
+    if (hashOwnerPassphrase(ownerPassphrase) !== ownerPassphraseHash) return;
+    window.localStorage.setItem(ownerModeStorageKey, "true");
+    setOwnerMode(true);
+    setOwnerGateVisible(true);
+    setOwnerPassphrase("");
+  }
+
+  function lockOwnerMode() {
+    window.localStorage.removeItem(ownerModeStorageKey);
+    setOwnerMode(false);
+  }
+
+  function handleOwnerPhotoUpload(productId: string, index: number, file: File) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const next = {
+        ...ownerPhotos,
+        [productId]: {
+          ...(ownerPhotos[productId] ?? {}),
+          [index]: {
+            src: String(reader.result ?? ""),
+            label: file.name.replace(/\.[^.]+$/, ""),
+            fileName: file.name,
+            updatedAt: new Date().toISOString(),
+          },
+        },
+      };
+      setOwnerPhotos(next);
+      saveOwnerPhotos(next);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function handleOwnerPhotoRemove(productId: string, index: number) {
+    const productSlots = { ...(ownerPhotos[productId] ?? {}) };
+    delete productSlots[index];
+    const next = { ...ownerPhotos, [productId]: productSlots };
+    if (Object.keys(productSlots).length === 0) delete next[productId];
+    setOwnerPhotos(next);
+    saveOwnerPhotos(next);
+  }
 
   const filteredProducts = products.filter((product) => {
     const queryMatch = `${product.name} ${product.code} ${product.description}`.toLowerCase().includes(query.toLowerCase());
@@ -1117,29 +1269,65 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
 
   return (
     <div className="min-h-screen max-w-full overflow-x-hidden bg-slate-50">
-      <GlobalDeliveryBanner />
-      <PublicHeader />
+      <GlobalDeliveryBanner copy={copy} />
+      <PublicHeader copy={copy} />
       <main className="mx-auto max-w-7xl space-y-8 overflow-hidden px-3 py-5 sm:px-4 lg:px-6">
+      {ownerGateVisible ? (
+        <section className="rounded-lg border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
+          {ownerMode ? (
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-extrabold text-emerald-950">{copy.ownerModeActive}</p>
+                <p className="mt-1 text-sm font-semibold leading-6 text-emerald-800">{copy.ownerModeNote}</p>
+              </div>
+              <button type="button" onClick={lockOwnerMode} className="rounded-md border border-emerald-700 px-4 py-3 text-sm font-bold text-emerald-950 hover:bg-white">
+                {copy.lockOwnerMode}
+              </button>
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(220px,320px)_auto] md:items-end">
+              <div>
+                <p className="text-sm font-extrabold text-emerald-950">{copy.ownerUnlockTitle}</p>
+                <p className="mt-1 text-sm font-semibold leading-6 text-emerald-800">{copy.ownerUnlockBody}</p>
+              </div>
+              <label className="grid gap-2 text-sm font-bold text-emerald-950">
+                {copy.ownerPassphrase}
+                <input
+                  type="password"
+                  value={ownerPassphrase}
+                  onChange={(event) => setOwnerPassphrase(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") unlockOwnerMode();
+                  }}
+                  className="rounded-md border border-emerald-300 bg-white px-3 py-3"
+                />
+              </label>
+              <button type="button" onClick={unlockOwnerMode} className="rounded-md bg-slate-950 px-4 py-3 text-sm font-bold text-white hover:bg-slate-800">
+                {copy.unlockOwnerMode}
+              </button>
+            </div>
+          )}
+        </section>
+      ) : null}
       <section className="overflow-hidden rounded-md bg-slate-950 text-white shadow-xl sm:rounded-lg">
         <div className="grid min-h-[auto] lg:min-h-[620px] lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
           <div className="flex min-w-0 flex-col justify-center px-5 py-12 sm:px-8 lg:px-12">
             <div className="inline-flex w-fit items-center gap-2 rounded-full border border-amber-400/40 bg-amber-400/10 px-4 py-2 text-sm font-bold text-amber-300">
               <span className="h-2 w-2 rounded-full bg-emerald-400" />
-              Live plant status: quoting and dispatch planning open
+              {copy.heroStatus}
             </div>
             <h1 className="mt-7 max-w-4xl break-words text-3xl font-black leading-tight tracking-normal sm:text-5xl lg:text-6xl">
-              Factory-direct concrete products for serious construction across Western Uganda.
+              {copy.heroTitle}
             </h1>
             <p className="drop-cap mt-6 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
-              Order hollow blocks, solid blocks, pavers, kerbstones, drainage channels, culverts, and future ready-mix concrete
-              from a disciplined Mbarara production platform built around UGX base records, multi-currency display, batch traceability, and direct site delivery.
+              {copy.heroBody}
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <a
                 href="#products"
                 className="inline-flex items-center justify-center gap-2 rounded-md bg-amber-400 px-5 py-3 text-center text-sm font-extrabold text-slate-950 hover:bg-amber-300"
               >
-                View products and prices
+                {copy.viewProducts}
                 <ArrowRight size={18} />
               </a>
               <a
@@ -1149,14 +1337,14 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
                 className="inline-flex items-center justify-center gap-2 rounded-md border border-white/20 px-5 py-3 text-center text-sm font-bold text-white hover:bg-white/10"
               >
                 <MessageCircle size={18} />
-                Chat now
+                {copy.chatNow}
               </a>
             </div>
             <div className="mt-8 grid max-w-3xl gap-3 sm:grid-cols-3">
               {[
-                ["Multi-currency", "UGX base records"],
-                ["Batch QC", "Internal crushing tests"],
-                ["Fleet logistics", "Direct site delivery"],
+                [copy.statCurrencyTitle, copy.statCurrencyBody],
+                [copy.statQcTitle, copy.statQcBody],
+                [copy.statFleetTitle, copy.statFleetBody],
               ].map(([title, body]) => (
                 <div key={title} className="rounded-md border border-slate-800 bg-white/5 p-4">
                   <p className="font-extrabold text-amber-300">{title}</p>
@@ -1177,66 +1365,66 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
         </div>
       </section>
 
-      <LogisticsCapability basketWeightKg={basketWeight} />
+      <LogisticsCapability basketWeightKg={basketWeight} copy={copy} />
 
       <section id="products" className="grid max-w-full gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,360px)]">
         <div className="min-w-0 space-y-5">
           <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="min-w-0">
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">Product catalogue</p>
-                <h2 className="break-words text-2xl font-extrabold text-slate-950 sm:text-3xl">Products, prices, filters, and quotation basket</h2>
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">{copy.productCatalogue}</p>
+                <h2 className="break-words text-2xl font-extrabold text-slate-950 sm:text-3xl">{copy.productsTitle}</h2>
               </div>
               <div className="inline-flex items-center gap-2 rounded-md bg-slate-100 px-3 py-2 text-sm font-bold text-slate-700">
                 <Filter size={17} />
-                {filteredProducts.length} products shown
+                {filteredProducts.length} {copy.productsShown}
               </div>
             </div>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
               <label className="grid gap-2 text-sm font-semibold text-slate-700 lg:col-span-2">
-                Search product
+                {copy.searchProduct}
                 <input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Search blocks, pavers, kerbs..."
+                  placeholder={copy.searchPlaceholder}
                   className="rounded-md border border-slate-300 px-3 py-3"
                 />
               </label>
               <label className="grid gap-2 text-sm font-semibold text-slate-700">
-                Category
+                {copy.category}
                 <select
                   value={category}
                   onChange={(event) => setCategory(event.target.value as "all" | ProductCategory)}
                   className="rounded-md border border-slate-300 px-3 py-3"
                 >
-                  <option value="all">All categories</option>
-                  <option value="blocks">Blocks</option>
-                  <option value="pavers">Pavers</option>
-                  <option value="precast">Precast</option>
-                  <option value="ready-mix">Ready-mix</option>
+                  <option value="all">{copy.allCategories}</option>
+                  <option value="blocks">{copy.blocks}</option>
+                  <option value="pavers">{copy.pavers}</option>
+                  <option value="precast">{copy.precast}</option>
+                  <option value="ready-mix">{copy.readyMix}</option>
                 </select>
               </label>
               <label className="grid gap-2 text-sm font-semibold text-slate-700">
-                Availability
+                {copy.availability}
                 <select
                   value={availability}
                   onChange={(event) => setAvailability(event.target.value as "all" | "available" | "quote")}
                   className="rounded-md border border-slate-300 px-3 py-3"
                 >
-                  <option value="all">All statuses</option>
-                  <option value="available">Ready to quote</option>
-                  <option value="quote">Quotation required</option>
+                  <option value="all">{copy.allStatuses}</option>
+                  <option value="available">{copy.readyToQuote}</option>
+                  <option value="quote">{copy.quotationRequired}</option>
                 </select>
               </label>
               <label className="grid gap-2 text-sm font-semibold text-slate-700">
-                Unit
+                {copy.unit}
                 <select
                   value={unit}
                   onChange={(event) => setUnit(event.target.value as "all" | ProductUnit)}
                   className="rounded-md border border-slate-300 px-3 py-3"
                 >
-                  <option value="all">All units</option>
+                  <option value="all">{copy.allUnits}</option>
                   <option value="unit">Unit</option>
                   <option value="m2">m2</option>
                   <option value="m3">m3</option>
@@ -1252,28 +1440,39 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
                 product={product}
                 onSelect={setSelectedProduct}
                 onViewGallery={setGalleryProduct}
+                copy={copy}
+                ownerPhotos={ownerPhotos}
               />
             ))}
           </div>
 
-          <ProductCatalogueGallery products={products} selected={galleryProduct} onSelect={setGalleryProduct} />
+          <ProductCatalogueGallery
+            products={products}
+            selected={galleryProduct}
+            onSelect={setGalleryProduct}
+            copy={copy}
+            ownerMode={ownerMode}
+            ownerPhotos={ownerPhotos}
+            onOwnerPhotoUpload={handleOwnerPhotoUpload}
+            onOwnerPhotoRemove={handleOwnerPhotoRemove}
+          />
 
           <QuantityPlanner
             selected={selectedProduct}
             onAdd={(item) => setBasket((current) => [...current, item])}
+            copy={copy}
           />
         </div>
 
-        <BasketSummary items={basket} />
+        <BasketSummary items={basket} copy={copy} />
       </section>
 
       <section className="grid max-w-full gap-5 rounded-lg border border-slate-200 bg-white p-5 shadow-sm lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
         <div className="min-w-0">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">Checkout safeguard</p>
-          <h2 className="mt-1 break-words text-2xl font-extrabold text-slate-950 sm:text-3xl">Choose payment route</h2>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">{copy.checkoutSafeguard}</p>
+          <h2 className="mt-1 break-words text-2xl font-extrabold text-slate-950 sm:text-3xl">{copy.paymentRouteTitle}</h2>
           <p className="mt-3 text-sm leading-7 text-slate-600">
-            Public buyers can submit an order inquiry by WhatsApp or email. Verified contractors can request credit-account fulfilment
-            subject to balance and approved credit limit checks.
+            {copy.paymentRouteBody}
           </p>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             <button
@@ -1281,60 +1480,60 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
               onClick={() => setPaymentMode("direct")}
               className={`rounded-md border p-4 text-left ${paymentMode === "direct" ? "border-amber-400 bg-amber-50" : "border-slate-200"}`}
             >
-              <p className="font-extrabold text-slate-950">Direct Payment</p>
-              <p className="mt-1 text-sm text-slate-600">Mobile Money / Cash / bank confirmation.</p>
+              <p className="font-extrabold text-slate-950">{copy.directPayment}</p>
+              <p className="mt-1 text-sm text-slate-600">{copy.directPaymentBody}</p>
             </button>
             <button
               type="button"
               onClick={() => setPaymentMode("credit")}
               className={`rounded-md border p-4 text-left ${paymentMode === "credit" ? "border-amber-400 bg-amber-50" : "border-slate-200"}`}
             >
-              <p className="font-extrabold text-slate-950">Contractor Credit Account</p>
-              <p className="mt-1 text-sm text-slate-600">For verified customers with approved limits.</p>
+              <p className="font-extrabold text-slate-950">{copy.creditAccount}</p>
+              <p className="mt-1 text-sm text-slate-600">{copy.creditAccountBody}</p>
             </button>
           </div>
         </div>
         <div className={`min-w-0 rounded-lg border p-5 ${creditBlocked ? "border-amber-500 bg-amber-50" : "border-slate-200 bg-slate-50"}`}>
           <div className="grid gap-3 sm:grid-cols-3">
             {[
-              ["Approved Credit Limit", approvedCreditLimit],
-              ["Current Outstanding Balance", outstandingBalance],
-              ["Remaining Available Credit", remainingCredit],
+              [copy.approvedCreditLimit, approvedCreditLimit],
+              [copy.outstandingBalance, outstandingBalance],
+              [copy.remainingCredit, remainingCredit],
             ].map(([label, value]) => (
               <div key={label} className="rounded-md bg-white p-4 shadow-sm">
                 <p className="text-xs font-bold uppercase text-slate-500">{label}</p>
-                <p className={`mt-2 break-words text-lg font-extrabold ${label === "Current Outstanding Balance" ? "text-red-600" : "text-slate-950"}`}>
+                <p className={`mt-2 break-words text-lg font-extrabold ${label === copy.outstandingBalance ? "text-red-600" : "text-slate-950"}`}>
                   {formatUGX(value as number)}
                 </p>
               </div>
             ))}
           </div>
           <p className="mt-4 text-sm font-semibold text-slate-700">
-            Cart plus delivery: {formatUGX(basketTotal + deliveryCost)}
+            {copy.cartPlusDelivery}: {formatUGX(basketTotal + deliveryCost)}
           </p>
           {creditBlocked ? (
             <p className="mt-3 rounded-md border border-amber-400 bg-white p-3 text-sm font-bold text-slate-950">
-              Credit boundary reached. Please make a payment on the outstanding balance or contact the finance desk before checkout.
+              {copy.creditBlocked}
             </p>
           ) : (
             <p className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm font-bold text-emerald-800">
-              Payment route is currently acceptable for inquiry submission.
+              {copy.paymentAcceptable}
             </p>
           )}
         </div>
       </section>
 
-      <MobileMoneyAndQr basketTotal={basketTotal} deliveryCost={deliveryCost} />
+      <MobileMoneyAndQr basketTotal={basketTotal} deliveryCost={deliveryCost} copy={copy} />
 
       <section className="rounded-lg bg-slate-950 p-5 text-white shadow-xl">
         <div className="grid gap-5 lg:grid-cols-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-400">Verified contractor portal preview</p>
-            <h2 className="mt-1 text-3xl font-extrabold">B2B ledger, order tracking, and blueprint requests</h2>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-400">{copy.portalEyebrow}</p>
+            <h2 className="mt-1 text-3xl font-extrabold">{copy.portalTitle}</h2>
           </div>
           <div className="lg:col-span-2">
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-              {["Draft", "Approved", "Fulfilling", "Out for Delivery", "Completed"].map((step, index) => (
+              {copy.portalSteps.split("|").map((step, index) => (
                 <div key={step} className="rounded-md border border-slate-800 bg-white/5 p-3">
                   <div className={`mb-3 h-2 rounded-full ${index <= 3 ? "bg-amber-400" : "bg-slate-700"}`} />
                   <p className="text-sm font-bold">{step}</p>
@@ -1345,9 +1544,9 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
               <div className="flex flex-wrap items-center gap-4">
                 <UploadCloud className="text-amber-300" size={34} />
                 <div>
-                  <p className="font-extrabold">Institutional Material Estimation Portal</p>
+                  <p className="font-extrabold">{copy.portalUploadTitle}</p>
                   <p className="mt-1 text-sm text-slate-300">
-                    Drag-and-drop zone concept for PDF, CAD, and DWG blueprint requests up to 50MB.
+                    {copy.portalUploadBody}
                   </p>
                 </div>
               </div>
@@ -1358,17 +1557,17 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
 
       <section className="grid gap-5 rounded-lg border border-slate-200 bg-white p-5 shadow-sm lg:grid-cols-3">
         {[
-          [ShieldCheck, IS_UNBS_CERTIFIED ? "UNBS Verification Ready" : "Strict Internal Quality Controls & Batch Crushing Tests"],
-          [ClipboardList, "Batch logs, curing records, and dispatch traceability"],
-          [Building2, "Contractor, institution, hardware, and developer supply"],
+          [ShieldCheck, IS_UNBS_CERTIFIED ? copy.qualityTitleCertified : copy.qualityTitleOne],
+          [ClipboardList, copy.qualityTitleTwo],
+          [Building2, copy.qualityTitleThree],
         ].map(([Icon, title]) => (
           <div key={title as string} className="rounded-lg bg-slate-50 p-5">
             <Icon className="text-amber-500" size={30} />
             <p className="mt-4 text-lg font-extrabold text-slate-950">{title as string}</p>
             <p className="mt-2 text-sm leading-6 text-slate-600">
               {IS_UNBS_CERTIFIED
-                ? "Official certification display can be enabled later through the global feature flag."
-                : "Laboratory quality certificates are compiled and issued upon final batch test verification."}
+                ? copy.qualityBodyCertified
+                : copy.qualityBodyInternal}
             </p>
           </div>
         ))}
@@ -1377,20 +1576,19 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
       <section id="funding-pack" className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
         <div className="grid gap-6 lg:grid-cols-[minmax(0,0.78fr)_minmax(0,1.22fr)]">
           <div className="min-w-0">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">Investor funding pack</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">{copy.fundingEyebrow}</p>
             <h2 className="mt-1 break-words text-2xl font-extrabold text-slate-950 sm:text-3xl">
-              Download the complete Phase 1 funding materials
+              {copy.fundingTitle}
             </h2>
             <p className="mt-3 text-sm leading-7 text-slate-600">
-              The package uses the agreed lean-launch model: UGX 130,000,000 starter budget, UGX 128,000,000 essential
-              Phase 1 startup cost, UGX 2,000,000 protected cash buffer, and a UGX 20,000,000 monthly profit target.
+              {copy.fundingBody}
             </p>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               {[
-                ["Funding ask", "UGX 130M"],
-                ["Phase 1 cost", "UGX 128M"],
-                ["Cash buffer", "UGX 2M"],
-                ["Model net profit", `${formatUGX(financials.netProfitUgx)}/month`],
+                [copy.fundingAsk, "UGX 130M"],
+                [copy.phaseCost, "UGX 128M"],
+                [copy.cashBuffer, "UGX 2M"],
+                [copy.modelNetProfit, `${formatUGX(financials.netProfitUgx)}/month`],
               ].map(([label, value]) => (
                 <div key={label} className="rounded-md bg-slate-50 p-4">
                   <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">{label}</p>
@@ -1399,8 +1597,7 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
               ))}
             </div>
             <p className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm font-semibold leading-6 text-slate-800">
-              Data confidence: current public model uses updated cement and diesel assumptions, but market prices, supplier
-              quotes, machinery costs, and competitor records must be re-verified before investment decisions.
+              {copy.dataConfidence}
             </p>
           </div>
           <div className="grid min-w-0 gap-3 sm:grid-cols-2">
@@ -1439,12 +1636,11 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
             />
           </div>
           <div className="min-w-0">
-            <p className="text-amber-500 tracking-widest text-xs font-bold uppercase">FOUNDER & MANAGING DIRECTOR</p>
+            <p className="text-amber-500 tracking-widest text-xs font-bold uppercase">{copy.founderEyebrow}</p>
             <h2 className="mb-2 mt-2 break-words text-3xl font-extrabold text-slate-900 dark:text-white">{companyProfile.directorName}</h2>
             <p className="text-sm font-bold text-slate-500">{companyProfile.directorTitle}</p>
             <blockquote className="mt-6 rounded-lg border-l-4 border-amber-400 bg-slate-950 p-6 text-lg font-semibold leading-8 text-white shadow-lg">
-              "Our commitment is to build a factory known for structural durability, disciplined curing, laboratory crushing tests,
-              and reliable industrial supply across Mbarara, Western Uganda, and the wider East African growth corridor."
+              &quot;{copy.founderQuote}&quot;
             </blockquote>
             <div className="mt-6 flex flex-wrap gap-3">
               <a href={contactLinks.email} className="inline-flex items-center justify-center gap-2 rounded-md bg-slate-950 px-4 py-3 text-center text-sm font-bold text-white">
@@ -1458,7 +1654,7 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
                 className="inline-flex items-center justify-center gap-2 rounded-md bg-amber-400 px-4 py-3 text-center text-sm font-extrabold text-slate-950"
               >
                 <Phone size={18} />
-                WhatsApp Uganda
+                {copy.whatsappUganda}
               </a>
             </div>
           </div>
@@ -1468,8 +1664,8 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
       <section id="inquiry" className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
         <div className="grid gap-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
           <div className="min-w-0">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">Send inquiry</p>
-            <h2 className="mt-1 break-words text-2xl font-extrabold text-slate-950 sm:text-3xl">Ask for price confirmation, delivery, or project supply</h2>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">{copy.inquiryEyebrow}</p>
+            <h2 className="mt-1 break-words text-2xl font-extrabold text-slate-950 sm:text-3xl">{copy.inquiryTitle}</h2>
             <div className="mt-5 space-y-3 text-sm font-semibold text-slate-700">
               <p className="flex items-center gap-2 break-words">
                 <MapPin size={18} className="shrink-0 text-amber-500" />
@@ -1497,15 +1693,15 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
           >
             <input type="hidden" name="form-name" value="product-inquiry" />
             <div className="grid gap-3 sm:grid-cols-2">
-              <input name="name" required placeholder="Your name / company" className="rounded-md border border-slate-300 px-3 py-3" />
-              <input name="phone" required placeholder="Phone / WhatsApp" className="rounded-md border border-slate-300 px-3 py-3" />
+              <input name="name" required placeholder={copy.namePlaceholder} className="rounded-md border border-slate-300 px-3 py-3" />
+              <input name="phone" required placeholder={copy.phonePlaceholder} className="rounded-md border border-slate-300 px-3 py-3" />
             </div>
-            <input name="location" placeholder="Project location" className="rounded-md border border-slate-300 px-3 py-3" />
-            <textarea name="message" rows={5} placeholder="Tell us product, quantity, delivery location, and timing..." className="rounded-md border border-slate-300 px-3 py-3" />
+            <input name="location" placeholder={copy.locationPlaceholder} className="rounded-md border border-slate-300 px-3 py-3" />
+            <textarea name="message" rows={5} placeholder={copy.messagePlaceholder} className="rounded-md border border-slate-300 px-3 py-3" />
             <div className="flex flex-wrap gap-3">
               <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-md bg-slate-950 px-5 py-3 text-center text-sm font-extrabold text-white">
                 <PackageCheck size={18} />
-                Submit inquiry
+                {copy.submitInquiry}
               </button>
               <a
                 href={`${contactLinks.whatsappGermany}?text=${encodeURIComponent("Hello, I want to inquire about Mbarara concrete products.")}`}
@@ -1514,12 +1710,12 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
                 className="inline-flex items-center justify-center gap-2 rounded-md bg-amber-400 px-5 py-3 text-center text-sm font-extrabold text-slate-950"
               >
                 <MessageCircle size={18} />
-                Chat now
+                {copy.chatNow}
               </a>
             </div>
             {inquirySent ? (
               <p className="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm font-bold text-emerald-800">
-                Inquiry captured on this page. For fastest response, also use WhatsApp chat now.
+                {copy.inquiryCaptured}
               </p>
             ) : null}
           </form>
@@ -1530,12 +1726,12 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="min-w-0">
             <p className="text-lg font-extrabold">{companyProfile.name}</p>
-            <p className="mt-1 text-sm text-slate-400">Displayed prices are converted estimates. Final settlement, Mobile Money payments, and bulk delivery terms must be confirmed in UGX before final order.</p>
+            <p className="mt-1 text-sm text-slate-400">{copy.footerNote}</p>
           </div>
           <div className="flex flex-wrap gap-2 text-sm">
-            <a href={contactLinks.email} className="rounded-md border border-slate-700 px-3 py-2 hover:bg-white/10">Email</a>
-            <a href={contactLinks.whatsappUganda} target="_blank" rel="noreferrer" className="rounded-md border border-slate-700 px-3 py-2 hover:bg-white/10">WhatsApp UG</a>
-            <a href={contactLinks.whatsappGermany} target="_blank" rel="noreferrer" className="rounded-md border border-slate-700 px-3 py-2 hover:bg-white/10">WhatsApp DE</a>
+            <a href={contactLinks.email} className="rounded-md border border-slate-700 px-3 py-2 hover:bg-white/10">{copy.email}</a>
+            <a href={contactLinks.whatsappUganda} target="_blank" rel="noreferrer" className="rounded-md border border-slate-700 px-3 py-2 hover:bg-white/10">{copy.whatsappUgShort}</a>
+            <a href={contactLinks.whatsappGermany} target="_blank" rel="noreferrer" className="rounded-md border border-slate-700 px-3 py-2 hover:bg-white/10">{copy.whatsappDeShort}</a>
           </div>
         </div>
       </footer>

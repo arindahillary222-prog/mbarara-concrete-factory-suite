@@ -47,7 +47,7 @@ export default function App() {
   }
 
   const tabContent: Record<AppTab, JSX.Element> = {
-    website: <PublicWebsiteModule state={state} />,
+    website: <PublicWebsiteModule state={state} displayLanguage={displayLanguage} />,
     dashboard: <DashboardModule state={state} erp={erp} />,
     financials: <FinancialModule state={state} setState={setState} erp={erp} />,
     inventory: <InventoryModule state={state} setState={setState} erp={erp} />,
