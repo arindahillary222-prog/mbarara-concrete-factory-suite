@@ -27,7 +27,7 @@ const storageKey = "mbarara-concrete-factory-platform-state-v4-conservative-dies
 const publicAsset = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`;
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<AppTab>("dashboard");
+  const [activeTab, setActiveTab] = useState<AppTab>("website");
   const [displayLanguage, setDisplayLanguage] = useState<DisplayLanguageCode>(() => getDisplayLanguageCode());
   const [state, setState] = useLocalStorageState<AppState>(storageKey, initialState);
   const erp = useMemo(() => computeErp(state), [state]);

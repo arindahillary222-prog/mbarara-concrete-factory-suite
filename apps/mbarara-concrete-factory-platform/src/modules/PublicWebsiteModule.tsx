@@ -1104,16 +1104,23 @@ function ProductCard({
   onSelect,
   onViewGallery,
   copy,
+  ownerMode,
   ownerPhotos,
+  onOwnerPhotoUpload,
+  onOwnerPhotoRemove,
 }: {
   product: WebsiteProduct;
   onSelect: (product: WebsiteProduct) => void;
   onViewGallery: (product: WebsiteProduct) => void;
   copy: PublicWebsiteCopy;
+  ownerMode: boolean;
   ownerPhotos: OwnerCataloguePhotos;
+  onOwnerPhotoUpload: (productId: string, index: number, file: File) => void;
+  onOwnerPhotoRemove: (productId: string, index: number) => void;
 }) {
   const locked = product.availableStock === 0 || product.curingStatus !== "Released for Sale" || product.approvalState !== "Internal Pass";
   const ownerMainPhoto = ownerPhotos[product.id]?.[0]?.src;
+  const hasOwnerMainPhoto = Boolean(ownerPhotos[product.id]?.[0]);
 
   return (
     <article className="group relative max-w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
@@ -1172,6 +1179,41 @@ function ProductCard({
             </button>
           </div>
         </div>
+        {ownerMode ? (
+          <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+            <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-emerald-900">
+              {copy.ownerModeActive}
+            </p>
+            <p className="mt-1 text-xs font-semibold leading-5 text-emerald-800">
+              {copy.uploadHint}
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-slate-950 px-3 py-2 text-xs font-bold text-white hover:bg-slate-800">
+                <UploadCloud size={15} />
+                {copy.replaceCurrentPhoto}
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  className="sr-only"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    if (file) onOwnerPhotoUpload(product.id, 0, file);
+                    event.currentTarget.value = "";
+                  }}
+                />
+              </label>
+              {hasOwnerMainPhoto ? (
+                <button
+                  type="button"
+                  onClick={() => onOwnerPhotoRemove(product.id, 0)}
+                  className="rounded-md border border-emerald-700 px-3 py-2 text-xs font-bold text-emerald-900 hover:bg-white"
+                >
+                  {copy.removeUploadedPhoto}
+                </button>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
       </div>
     </article>
   );
@@ -1441,7 +1483,10 @@ export function PublicWebsiteModule({ state, displayLanguage }: { state: AppStat
                 onSelect={setSelectedProduct}
                 onViewGallery={setGalleryProduct}
                 copy={copy}
+                ownerMode={ownerMode}
                 ownerPhotos={ownerPhotos}
+                onOwnerPhotoUpload={handleOwnerPhotoUpload}
+                onOwnerPhotoRemove={handleOwnerPhotoRemove}
               />
             ))}
           </div>
