@@ -73,13 +73,13 @@ export function Shell({
       </header>
 
       <div className="mx-auto grid max-w-7xl gap-5 px-3 py-5 sm:px-4 lg:grid-cols-[minmax(0,250px)_minmax(0,1fr)] lg:px-6">
-        <nav className="touch-scroll flex h-fit max-w-full gap-2 overflow-x-auto rounded-md border border-slate-200 bg-white p-2 shadow-sm lg:block">
+        <nav className="flex h-fit max-w-full flex-wrap gap-2 rounded-md border border-slate-200 bg-white p-2 shadow-sm lg:block">
           {navItems.map((item) => (
             <button
               key={item.id}
               type="button"
               onClick={() => onTabChange(item.id)}
-              className={`mb-1 flex shrink-0 items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-semibold lg:w-full ${
+              className={`mb-1 flex min-w-0 flex-1 items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-semibold sm:flex-none lg:w-full ${
                 activeTab === item.id ? "bg-factory-navy text-white" : "text-slate-700 hover:bg-slate-100"
               }`}
             >
