@@ -17,7 +17,7 @@ import { QualityModule } from "./modules/QualityModule";
 import { ReportPdfGenerator } from "./modules/ReportPdfGenerator";
 import type { AppState } from "./types";
 
-const storageKey = "mbarara-concrete-factory-platform-state-v3-practical-costs";
+const storageKey = "mbarara-concrete-factory-platform-state-v4-conservative-diesel";
 const publicAsset = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`;
 
 export default function App() {

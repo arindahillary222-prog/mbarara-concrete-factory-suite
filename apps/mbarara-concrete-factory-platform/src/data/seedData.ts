@@ -274,7 +274,7 @@ export const financialAssumptions: FinancialAssumptions = {
   aggregateTonnePriceUgx: 60000,
   electricityCostPerKwhUgx: 780,
   waterCostPerM3Ugx: 4200,
-  dieselPricePerLitreUgx: 6100,
+  dieselPricePerLitreUgx: 6600,
   labourCostPerMonthUgx: 8500000,
   transportCostPerTruckUgx: 260000,
   workingDaysPerMonth: 26,
