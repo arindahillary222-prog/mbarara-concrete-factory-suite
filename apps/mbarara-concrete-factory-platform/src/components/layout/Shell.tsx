@@ -13,6 +13,13 @@ import {
   ShoppingCart,
   Store,
 } from "lucide-react";
+import {
+  displayLanguageOptions,
+  exchangeRateNote,
+  getDisplayLanguageConfig,
+  languageCopy,
+  type DisplayLanguageCode,
+} from "../../lib/localization";
 
 export type AppTab =
   | "website"
@@ -42,32 +49,57 @@ const navItems: { id: AppTab; label: string; icon: ReactNode }[] = [
 export function Shell({
   activeTab,
   onTabChange,
+  displayLanguage,
+  onDisplayLanguageChange,
   children,
 }: {
   activeTab: AppTab;
   onTabChange: (tab: AppTab) => void;
+  displayLanguage: DisplayLanguageCode;
+  onDisplayLanguageChange: (language: DisplayLanguageCode) => void;
   children: ReactNode;
 }) {
+  const copy = languageCopy[displayLanguage] ?? languageCopy.en;
+  const selectedLanguage = getDisplayLanguageConfig(displayLanguage);
+
   return (
     <div className="min-h-screen max-w-full overflow-x-hidden bg-factory-paper">
       <div className="flex w-full max-w-full items-center justify-center gap-2 bg-amber-500 px-3 py-2 text-center text-sm font-bold tracking-wide text-slate-950 shadow-md">
         <span aria-hidden="true">🚚</span>
-        <span className="min-w-0 leading-5">
-          FREE SITE DELIVERY | Complimentary Fleet Transportation Directly To Your Construction Site Across the Mbarara Region
-          (On Qualifying Bulk Orders).
-        </span>
+        <span className="min-w-0 leading-5">{copy.deliveryBanner}</span>
       </div>
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-3 py-4 sm:px-4 lg:px-6">
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-factory-green">UGX-only integrated planning system</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-factory-green">UGX-base integrated planning system</p>
             <h1 className="mt-1 break-words text-xl font-semibold tracking-normal text-factory-navy">
               Mbarara Integrated Concrete Products Factory
             </h1>
           </div>
-          <div className="flex min-w-0 items-center gap-2 rounded-md bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700">
-            <Landmark size={17} className="shrink-0" />
-            Investor, Engineering, Financial & Expansion Master Report 2026-2035
+          <div className="flex min-w-0 flex-wrap items-center justify-end gap-3">
+            <div className="flex min-w-0 items-center gap-2 rounded-md bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700">
+              <Landmark size={17} className="shrink-0" />
+              Investor, Engineering, Financial & Expansion Master Report 2026-2035
+            </div>
+            <label className="grid min-w-[230px] gap-1 rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 shadow-sm">
+              <span>{copy.languageCurrency}</span>
+              <select
+                value={displayLanguage}
+                onChange={(event) => onDisplayLanguageChange(event.target.value as DisplayLanguageCode)}
+                className="w-full rounded-md border border-slate-300 bg-white px-2 py-2 text-sm font-bold text-slate-900"
+              >
+                {displayLanguageOptions.map((option) => (
+                  <option key={option.code} value={option.code}>
+                    {option.label} / {option.nativeLabel} - {option.currency}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="max-w-sm rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold leading-5 text-slate-800">
+              <p>{selectedLanguage.summary}</p>
+              <p>{copy.baseAccounting}. {exchangeRateNote(displayLanguage)}.</p>
+              <p>{copy.fxWarning}</p>
+            </div>
           </div>
         </div>
       </header>
@@ -84,7 +116,7 @@ export function Shell({
               }`}
             >
               {item.icon}
-              {item.label}
+              {copy.nav[item.id] ?? item.label}
             </button>
           ))}
         </nav>

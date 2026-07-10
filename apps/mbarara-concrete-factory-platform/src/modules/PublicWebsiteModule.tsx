@@ -28,7 +28,7 @@ import {
   UploadCloud,
 } from "lucide-react";
 import { companyProfile, contactLinks, IS_UNBS_CERTIFIED } from "../config/site";
-import { computeErp } from "../lib/calculations";
+import { computeErp, formatUGX } from "../lib/calculations";
 import type { AppState, Product } from "../types";
 
 type ProductCategory = Product["category"];
@@ -64,12 +64,6 @@ interface CatalogueImage {
   sourceStatus: "Uploaded product photo" | "Awaiting upload" | "Catalogue fallback";
   matchNote?: string;
 }
-
-const formatUgx = new Intl.NumberFormat("en-UG", {
-  style: "currency",
-  currency: "UGX",
-  maximumFractionDigits: 0,
-});
 
 const productCodes: Record<string, string> = {
   "4-inch hollow blocks": "B075",
@@ -425,8 +419,8 @@ function buildWhatsAppCheckoutPayload({
           return [
             `${index + 1}. ${item.product.code} - ${item.product.name}`,
             `   Quantity: ${item.quantity} ${item.product.unit}${item.concreteClass ? ` (${item.concreteClass})` : ""}`,
-            `   Unit price: ${formatUgx.format(item.product.priceUgx)}`,
-            `   Line total: ${formatUgx.format(lineTotal)}`,
+            `   Unit price: ${formatUGX(item.product.priceUgx)}`,
+            `   Line total: ${formatUGX(lineTotal)}`,
             `   Estimated weight: ${(lineWeight / 1000).toFixed(2)} tonnes`,
           ].join("\n");
         })
@@ -436,7 +430,7 @@ function buildWhatsAppCheckoutPayload({
     `Hello ${companyProfile.name}, I would like to request a quotation/order from the website cart.`,
     "",
     "WHATSAPP CHECKOUT PAYLOAD",
-    `Currency: UGX only`,
+    `Display currency follows the website selector. Base settlement and accounting remain UGX.`,
     `Customer name/company:`,
     `Project location:`,
     `Preferred delivery date:`,
@@ -444,7 +438,7 @@ function buildWhatsAppCheckoutPayload({
     "Cart items:",
     ...productLines,
     "",
-    `Estimated product total: ${formatUgx.format(total)}`,
+    `Estimated product total: ${formatUGX(total)}`,
     `Estimated basket weight: ${(totalWeight / 1000).toFixed(2)} tonnes`,
     `Delivery status: ${deliveryStatus}`,
     "",
@@ -500,7 +494,7 @@ function BasketSummary({ items }: { items: BasketItem[] }) {
                   </p>
                 </div>
                 <p className="shrink-0 text-right text-sm font-bold text-amber-300">
-                  {formatUgx.format(item.quantity * item.product.priceUgx)}
+                  {formatUGX(item.quantity * item.product.priceUgx)}
                 </p>
               </div>
             </div>
@@ -526,7 +520,7 @@ function BasketSummary({ items }: { items: BasketItem[] }) {
       <dl className="mt-5 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
         <div className="rounded-md bg-white/8 p-3">
           <dt className="text-slate-400">Basket value</dt>
-          <dd className="mt-1 break-words font-extrabold text-amber-300">{formatUgx.format(total)}</dd>
+          <dd className="mt-1 break-words font-extrabold text-amber-300">{formatUGX(total)}</dd>
         </div>
         <div className="rounded-md bg-white/8 p-3">
           <dt className="text-slate-400">Weight</dt>
@@ -674,15 +668,15 @@ function MobileMoneyAndQr({ basketTotal, deliveryCost }: { basketTotal: number; 
           <div className="mt-3 grid gap-3 sm:grid-cols-3">
             <div className="rounded-md bg-white p-4 shadow-sm">
               <p className="text-xs font-bold uppercase text-slate-500">Products</p>
-              <p className="mt-1 break-words text-lg font-extrabold text-slate-950">{formatUgx.format(basketTotal)}</p>
+              <p className="mt-1 break-words text-lg font-extrabold text-slate-950">{formatUGX(basketTotal)}</p>
             </div>
             <div className="rounded-md bg-white p-4 shadow-sm">
               <p className="text-xs font-bold uppercase text-slate-500">Delivery</p>
-              <p className="mt-1 break-words text-lg font-extrabold text-slate-950">{formatUgx.format(deliveryCost)}</p>
+              <p className="mt-1 break-words text-lg font-extrabold text-slate-950">{formatUGX(deliveryCost)}</p>
             </div>
             <div className="rounded-md bg-white p-4 shadow-sm">
               <p className="text-xs font-bold uppercase text-slate-500">Estimated payable</p>
-              <p className="mt-1 break-words text-lg font-extrabold text-amber-700">{formatUgx.format(payableTotal)}</p>
+              <p className="mt-1 break-words text-lg font-extrabold text-amber-700">{formatUGX(payableTotal)}</p>
             </div>
           </div>
           <p className="mt-4 text-sm leading-6 text-slate-600">
@@ -772,7 +766,7 @@ function QuantityPlanner({
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">Material calculator</p>
           <h3 className="mt-1 text-xl font-extrabold text-slate-950">{selected.name}</h3>
           <p className="mt-1 text-sm text-slate-600">
-            {selected.code} | {formatUgx.format(selected.priceUgx)} per {selected.unit}
+            {selected.code} | {formatUGX(selected.priceUgx)} per {selected.unit}
           </p>
         </div>
         <span className="rounded-md bg-slate-100 px-3 py-2 text-xs font-bold uppercase text-slate-700">
@@ -1056,7 +1050,7 @@ function ProductCard({
         <div className="mt-5 flex flex-wrap items-end justify-between gap-3">
           <div className="min-w-0">
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Ex-works price</p>
-            <p className="break-words text-xl font-extrabold text-slate-950">{formatUgx.format(product.priceUgx)}</p>
+            <p className="break-words text-xl font-extrabold text-slate-950">{formatUGX(product.priceUgx)}</p>
           </div>
           <div className="grid min-w-[9rem] gap-2">
             <button
@@ -1138,7 +1132,7 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
             </h1>
             <p className="drop-cap mt-6 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
               Order hollow blocks, solid blocks, pavers, kerbstones, drainage channels, culverts, and future ready-mix concrete
-              from a disciplined Mbarara production platform built around UGX pricing, batch traceability, and direct site delivery.
+              from a disciplined Mbarara production platform built around UGX base records, multi-currency display, batch traceability, and direct site delivery.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <a
@@ -1160,7 +1154,7 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
             </div>
             <div className="mt-8 grid max-w-3xl gap-3 sm:grid-cols-3">
               {[
-                ["UGX only", "Transparent local pricing"],
+                ["Multi-currency", "UGX base records"],
                 ["Batch QC", "Internal crushing tests"],
                 ["Fleet logistics", "Direct site delivery"],
               ].map(([title, body]) => (
@@ -1310,13 +1304,13 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
               <div key={label} className="rounded-md bg-white p-4 shadow-sm">
                 <p className="text-xs font-bold uppercase text-slate-500">{label}</p>
                 <p className={`mt-2 break-words text-lg font-extrabold ${label === "Current Outstanding Balance" ? "text-red-600" : "text-slate-950"}`}>
-                  {formatUgx.format(value as number)}
+                  {formatUGX(value as number)}
                 </p>
               </div>
             ))}
           </div>
           <p className="mt-4 text-sm font-semibold text-slate-700">
-            Cart plus delivery: {formatUgx.format(basketTotal + deliveryCost)}
+            Cart plus delivery: {formatUGX(basketTotal + deliveryCost)}
           </p>
           {creditBlocked ? (
             <p className="mt-3 rounded-md border border-amber-400 bg-white p-3 text-sm font-bold text-slate-950">
@@ -1396,7 +1390,7 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
                 ["Funding ask", "UGX 130M"],
                 ["Phase 1 cost", "UGX 128M"],
                 ["Cash buffer", "UGX 2M"],
-                ["Model net profit", `${formatUgx.format(financials.netProfitUgx)}/month`],
+                ["Model net profit", `${formatUGX(financials.netProfitUgx)}/month`],
               ].map(([label, value]) => (
                 <div key={label} className="rounded-md bg-slate-50 p-4">
                   <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">{label}</p>
@@ -1536,7 +1530,7 @@ export function PublicWebsiteModule({ state }: { state: AppState }) {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="min-w-0">
             <p className="text-lg font-extrabold">{companyProfile.name}</p>
-            <p className="mt-1 text-sm text-slate-400">UGX pricing only. Market prices, Mobile Money payments, and bulk delivery terms must be confirmed before final order.</p>
+            <p className="mt-1 text-sm text-slate-400">Displayed prices are converted estimates. Final settlement, Mobile Money payments, and bulk delivery terms must be confirmed in UGX before final order.</p>
           </div>
           <div className="flex flex-wrap gap-2 text-sm">
             <a href={contactLinks.email} className="rounded-md border border-slate-700 px-3 py-2 hover:bg-white/10">Email</a>

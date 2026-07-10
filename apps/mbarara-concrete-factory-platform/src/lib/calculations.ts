@@ -8,12 +8,9 @@ import type {
   QualityTest,
   Sale,
 } from "../types";
+import { formatDisplayMoney } from "./localization";
 
-export const formatUGX = (value: number, compact = false) =>
-  `UGX ${new Intl.NumberFormat("en-UG", {
-    maximumFractionDigits: 0,
-    notation: compact ? "compact" : "standard",
-  }).format(Number.isFinite(value) ? value : 0)}`;
+export const formatUGX = (value: number, compact = false) => formatDisplayMoney(value, compact);
 
 export const numberFormat = (value: number) =>
   new Intl.NumberFormat("en-UG", { maximumFractionDigits: 1 }).format(Number.isFinite(value) ? value : 0);

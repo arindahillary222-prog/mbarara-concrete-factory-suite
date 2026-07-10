@@ -1,9 +1,15 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { RotateCcw } from "lucide-react";
 import { Panel } from "./components/common/Panel";
 import { Shell, type AppTab } from "./components/layout/Shell";
 import { initialState } from "./data/seedData";
 import { computeErp } from "./lib/calculations";
+import {
+  applyDocumentLanguage,
+  getDisplayLanguageCode,
+  saveDisplayLanguageCode,
+  type DisplayLanguageCode,
+} from "./lib/localization";
 import { useLocalStorageState } from "./lib/useLocalStorage";
 import { DashboardModule } from "./modules/DashboardModule";
 import { DatabaseModule } from "./modules/DatabaseModule";
@@ -22,8 +28,18 @@ const publicAsset = (path: string) => `${import.meta.env.BASE_URL}${path.replace
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<AppTab>("website");
+  const [displayLanguage, setDisplayLanguage] = useState<DisplayLanguageCode>(() => getDisplayLanguageCode());
   const [state, setState] = useLocalStorageState<AppState>(storageKey, initialState);
   const erp = useMemo(() => computeErp(state), [state]);
+
+  useEffect(() => {
+    applyDocumentLanguage(displayLanguage);
+  }, [displayLanguage]);
+
+  function handleDisplayLanguageChange(language: DisplayLanguageCode) {
+    saveDisplayLanguageCode(language);
+    setDisplayLanguage(language);
+  }
 
   function resetSeedData() {
     setState(initialState);
@@ -44,7 +60,7 @@ export default function App() {
   };
 
   return (
-    <Shell activeTab={activeTab} onTabChange={setActiveTab}>
+    <Shell activeTab={activeTab} onTabChange={setActiveTab} displayLanguage={displayLanguage} onDisplayLanguageChange={handleDisplayLanguageChange}>
       {activeTab !== "website" && (
         <Panel
           title="Integrated Project Control"
@@ -88,8 +104,8 @@ export default function App() {
               Records are local-storage first and structured for PostgreSQL integration.
             </p>
             <p>
-              Currency is UGX only. Unverified market prices, competitor records, contacts, and machinery costs are labelled
-              as estimated, quotation required, or needs verification.
+              Core accounting records remain UGX. Visitor-facing money displays can switch to USD, GBP, EUR, CNY, INR, KES, or AED
+              for easier reading, while unverified prices and machinery costs stay labelled as estimated or quotation required.
             </p>
             <p>
               Modules share one state model, so financials, inventory, production, quality control, ERP reporting, market
