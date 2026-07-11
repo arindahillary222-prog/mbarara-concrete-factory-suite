@@ -76,9 +76,8 @@ interface OwnerPhotoSlot {
 
 type OwnerCataloguePhotos = Record<string, Record<number, OwnerPhotoSlot>>;
 
-const ownerPhotoStorageKey = "mbarara-owner-catalogue-photos-v1";
-const ownerModeStorageKey = "mbarara-owner-photo-mode-v1";
-const ownerPassphraseHash = "2135406492";
+const ownerSessionStorageKey = "mbarara-owner-photo-session-token-v1";
+const ownerPhotoApiPath = "/.netlify/functions/product-photos";
 
 const productCodes: Record<string, string> = {
   "4-inch hollow blocks": "B075",
@@ -345,31 +344,106 @@ function publicAsset(path: string) {
   return `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`;
 }
 
-function hashOwnerPassphrase(value: string) {
-  let hash = 0;
-  for (let index = 0; index < value.length; index += 1) {
-    hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
-  }
-  return String(hash);
-}
-
-function loadOwnerPhotos(): OwnerCataloguePhotos {
-  if (typeof window === "undefined") return {};
-  try {
-    return JSON.parse(window.localStorage.getItem(ownerPhotoStorageKey) ?? "{}") as OwnerCataloguePhotos;
-  } catch {
-    return {};
-  }
-}
-
-function saveOwnerPhotos(photos: OwnerCataloguePhotos) {
-  if (typeof window !== "undefined") window.localStorage.setItem(ownerPhotoStorageKey, JSON.stringify(photos));
-}
-
 function shouldShowOwnerGate() {
   if (typeof window === "undefined") return false;
   const params = new URLSearchParams(window.location.search);
-  return params.get("owner") === "photos" || window.localStorage.getItem(ownerModeStorageKey) === "true";
+  return params.get("owner") === "photos" || Boolean(window.sessionStorage.getItem(ownerSessionStorageKey));
+}
+
+async function parseOwnerPhotoResponse(response: Response) {
+  const payload = await response.json().catch(() => ({ ok: false, error: "Invalid server response." }));
+  if (!response.ok || !payload.ok) throw new Error(payload.error || "Photo service request failed.");
+  return payload as { ok: true; photos?: OwnerCataloguePhotos; token?: string };
+}
+
+async function fetchOwnerPhotos() {
+  const response = await fetch(ownerPhotoApiPath, { headers: { accept: "application/json" } });
+  const payload = await parseOwnerPhotoResponse(response);
+  return payload.photos ?? {};
+}
+
+async function createOwnerPhotoSession(passphrase: string) {
+  const response = await fetch(ownerPhotoApiPath, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ action: "login", passphrase }),
+  });
+  const payload = await parseOwnerPhotoResponse(response);
+  if (!payload.token) throw new Error("Owner session token was not returned.");
+  return payload.token;
+}
+
+async function fileToCompressedDataUrl(file: File) {
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+    throw new Error("Use a JPG, PNG, or WEBP image.");
+  }
+
+  const sourceDataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result ?? ""));
+    reader.onerror = () => reject(new Error("Could not read image file."));
+    reader.readAsDataURL(file);
+  });
+
+  const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const nextImage = new Image();
+    nextImage.onload = () => resolve(nextImage);
+    nextImage.onerror = () => reject(new Error("Could not load image file."));
+    nextImage.src = sourceDataUrl;
+  });
+
+  const maxSide = 1800;
+  const scale = Math.min(1, maxSide / Math.max(image.naturalWidth, image.naturalHeight));
+  const width = Math.max(1, Math.round(image.naturalWidth * scale));
+  const height = Math.max(1, Math.round(image.naturalHeight * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("Could not prepare image compressor.");
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, width, height);
+  context.drawImage(image, 0, 0, width, height);
+
+  return {
+    dataUrl: canvas.toDataURL("image/jpeg", 0.86),
+    contentType: "image/jpeg",
+  };
+}
+
+async function uploadOwnerPhoto(productId: string, index: number, file: File, token: string) {
+  const compressed = await fileToCompressedDataUrl(file);
+  const response = await fetch(ownerPhotoApiPath, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      action: "upload",
+      productId,
+      index,
+      fileName: file.name,
+      label: file.name.replace(/\.[^.]+$/, ""),
+      contentType: compressed.contentType,
+      dataUrl: compressed.dataUrl,
+    }),
+  });
+  const payload = await parseOwnerPhotoResponse(response);
+  return payload.photos ?? {};
+}
+
+async function deleteOwnerPhoto(productId: string, index: number, token: string) {
+  const response = await fetch(ownerPhotoApiPath, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ action: "delete", productId, index }),
+  });
+  const payload = await parseOwnerPhotoResponse(response);
+  return payload.photos ?? {};
 }
 
 function GlobalDeliveryBanner({ copy }: { copy: PublicWebsiteCopy }) {
@@ -1238,56 +1312,83 @@ export function PublicWebsiteModule({ state, displayLanguage }: { state: AppStat
   const [inquirySent, setInquirySent] = useState(false);
   const [ownerGateVisible, setOwnerGateVisible] = useState(false);
   const [ownerMode, setOwnerMode] = useState(false);
+  const [ownerToken, setOwnerToken] = useState("");
   const [ownerPassphrase, setOwnerPassphrase] = useState("");
-  const [ownerPhotos, setOwnerPhotos] = useState<OwnerCataloguePhotos>(() => loadOwnerPhotos());
+  const [ownerMessage, setOwnerMessage] = useState("");
+  const [ownerBusy, setOwnerBusy] = useState(false);
+  const [ownerPhotos, setOwnerPhotos] = useState<OwnerCataloguePhotos>({});
 
   useEffect(() => {
     const visible = shouldShowOwnerGate();
+    const token = typeof window !== "undefined" ? window.sessionStorage.getItem(ownerSessionStorageKey) ?? "" : "";
     setOwnerGateVisible(visible);
-    setOwnerMode(typeof window !== "undefined" && window.localStorage.getItem(ownerModeStorageKey) === "true");
+    setOwnerToken(token);
+    setOwnerMode(Boolean(token));
+    fetchOwnerPhotos()
+      .then(setOwnerPhotos)
+      .catch((error) => setOwnerMessage(error instanceof Error ? error.message : "Could not load product photos."));
   }, []);
 
-  function unlockOwnerMode() {
-    if (hashOwnerPassphrase(ownerPassphrase) !== ownerPassphraseHash) return;
-    window.localStorage.setItem(ownerModeStorageKey, "true");
-    setOwnerMode(true);
-    setOwnerGateVisible(true);
-    setOwnerPassphrase("");
+  async function unlockOwnerMode() {
+    setOwnerBusy(true);
+    setOwnerMessage("");
+    try {
+      const token = await createOwnerPhotoSession(ownerPassphrase);
+      window.sessionStorage.setItem(ownerSessionStorageKey, token);
+      setOwnerToken(token);
+      setOwnerMode(true);
+      setOwnerGateVisible(true);
+      setOwnerPassphrase("");
+      setOwnerPhotos(await fetchOwnerPhotos());
+      setOwnerMessage("Owner upload session unlocked for this browser tab.");
+    } catch (error) {
+      setOwnerMessage(error instanceof Error ? error.message : "Owner login failed.");
+    } finally {
+      setOwnerBusy(false);
+    }
   }
 
   function lockOwnerMode() {
-    window.localStorage.removeItem(ownerModeStorageKey);
+    window.sessionStorage.removeItem(ownerSessionStorageKey);
+    setOwnerToken("");
     setOwnerMode(false);
+    setOwnerMessage("Owner upload session locked.");
   }
 
-  function handleOwnerPhotoUpload(productId: string, index: number, file: File) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const next = {
-        ...ownerPhotos,
-        [productId]: {
-          ...(ownerPhotos[productId] ?? {}),
-          [index]: {
-            src: String(reader.result ?? ""),
-            label: file.name.replace(/\.[^.]+$/, ""),
-            fileName: file.name,
-            updatedAt: new Date().toISOString(),
-          },
-        },
-      };
-      setOwnerPhotos(next);
-      saveOwnerPhotos(next);
-    };
-    reader.readAsDataURL(file);
+  async function handleOwnerPhotoUpload(productId: string, index: number, file: File) {
+    if (!ownerToken) {
+      setOwnerMessage("Unlock owner mode before uploading photos.");
+      return;
+    }
+    setOwnerBusy(true);
+    setOwnerMessage("");
+    try {
+      setOwnerPhotos(await uploadOwnerPhoto(productId, index, file, ownerToken));
+      setOwnerMessage("Product photo uploaded and published.");
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("Owner session")) lockOwnerMode();
+      setOwnerMessage(error instanceof Error ? error.message : "Photo upload failed.");
+    } finally {
+      setOwnerBusy(false);
+    }
   }
 
-  function handleOwnerPhotoRemove(productId: string, index: number) {
-    const productSlots = { ...(ownerPhotos[productId] ?? {}) };
-    delete productSlots[index];
-    const next = { ...ownerPhotos, [productId]: productSlots };
-    if (Object.keys(productSlots).length === 0) delete next[productId];
-    setOwnerPhotos(next);
-    saveOwnerPhotos(next);
+  async function handleOwnerPhotoRemove(productId: string, index: number) {
+    if (!ownerToken) {
+      setOwnerMessage("Unlock owner mode before deleting photos.");
+      return;
+    }
+    setOwnerBusy(true);
+    setOwnerMessage("");
+    try {
+      setOwnerPhotos(await deleteOwnerPhoto(productId, index, ownerToken));
+      setOwnerMessage("Product photo removed.");
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("Owner session")) lockOwnerMode();
+      setOwnerMessage(error instanceof Error ? error.message : "Photo delete failed.");
+    } finally {
+      setOwnerBusy(false);
+    }
   }
 
   const filteredProducts = products.filter((product) => {
@@ -1344,11 +1445,21 @@ export function PublicWebsiteModule({ state, displayLanguage }: { state: AppStat
                   className="rounded-md border border-emerald-300 bg-white px-3 py-3"
                 />
               </label>
-              <button type="button" onClick={unlockOwnerMode} className="rounded-md bg-slate-950 px-4 py-3 text-sm font-bold text-white hover:bg-slate-800">
-                {copy.unlockOwnerMode}
+              <button
+                type="button"
+                onClick={unlockOwnerMode}
+                disabled={ownerBusy}
+                className="rounded-md bg-slate-950 px-4 py-3 text-sm font-bold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+              >
+                {ownerBusy ? "Checking..." : copy.unlockOwnerMode}
               </button>
             </div>
           )}
+          {ownerMessage ? (
+            <p className="mt-4 rounded-md border border-emerald-200 bg-white px-3 py-2 text-sm font-bold text-emerald-900">
+              {ownerMessage}
+            </p>
+          ) : null}
         </section>
       ) : null}
       <section className="overflow-hidden rounded-md bg-slate-950 text-white shadow-xl sm:rounded-lg">
