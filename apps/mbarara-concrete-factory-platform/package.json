@@ -26,5 +26,11 @@
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.2",
     "vite": "^6.0.5"
+  },
+  "overrides": {
+    "@opentelemetry/core": "2.9.0",
+    "@opentelemetry/resources": "2.9.0",
+    "@opentelemetry/sdk-trace-base": "2.9.0",
+    "@opentelemetry/sdk-trace-node": "2.9.0"
   }
 }

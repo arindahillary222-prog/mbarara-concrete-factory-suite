@@ -1841,6 +1841,7 @@ export function PublicWebsiteModule({ state, displayLanguage }: { state: AppStat
             name="product-inquiry"
             method="POST"
             data-netlify="true"
+            data-netlify-honeypot="bot-field"
             onSubmit={(event) => {
               event.preventDefault();
               setInquirySent(true);
@@ -1848,6 +1849,11 @@ export function PublicWebsiteModule({ state, displayLanguage }: { state: AppStat
             className="grid gap-3"
           >
             <input type="hidden" name="form-name" value="product-inquiry" />
+            <p className="hidden" aria-hidden="true">
+              <label>
+                Bot validation check: <input name="bot-field" tabIndex={-1} autoComplete="off" />
+              </label>
+            </p>
             <div className="grid gap-3 sm:grid-cols-2">
               <input name="name" required placeholder={copy.namePlaceholder} className="rounded-md border border-slate-300 px-3 py-3" />
               <input name="phone" required placeholder={copy.phonePlaceholder} className="rounded-md border border-slate-300 px-3 py-3" />
