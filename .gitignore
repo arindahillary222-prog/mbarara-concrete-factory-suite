@@ -2,6 +2,7 @@ node_modules/
 dist/
 dist-standalone/
 .netlify/
+.wrangler/
 .venv/
 __pycache__/
 .pytest_cache/
