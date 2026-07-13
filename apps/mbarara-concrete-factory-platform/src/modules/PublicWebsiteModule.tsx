@@ -77,7 +77,7 @@ interface OwnerPhotoSlot {
 type OwnerCataloguePhotos = Record<string, Record<number, OwnerPhotoSlot>>;
 
 const ownerSessionStorageKey = "mbarara-owner-photo-session-token-v1";
-const ownerPhotoApiPath = "/.netlify/functions/product-photos";
+const ownerPhotoApiPath = "https://mbarara-concrete-api.arindahillary222.workers.dev/product-photos";
 
 const productCodes: Record<string, string> = {
   "4-inch hollow blocks": "B075",

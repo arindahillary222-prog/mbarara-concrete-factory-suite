@@ -103,7 +103,7 @@ export function SoftwareCoreModule() {
                 value={apiBaseUrl}
                 onChange={(event) => setApiBaseUrl(event.target.value)}
                 className="rounded-md border border-slate-300 px-3 py-2 font-normal"
-                placeholder="http://127.0.0.1:8000"
+                placeholder="https://mbarara-concrete-api.arindahillary222.workers.dev"
               />
             </label>
             <div className="flex flex-wrap gap-2">

@@ -1,9 +1,10 @@
 const apiBaseUrlStorageKey = "mbarara-api-base-url-v1";
 const apiTokenStorageKey = "mbarara-api-access-token-v1";
+const defaultApiBaseUrl = "https://mbarara-concrete-api.arindahillary222.workers.dev";
 
 export function getApiBaseUrl() {
-  if (typeof window === "undefined") return "http://127.0.0.1:8000";
-  return window.localStorage.getItem(apiBaseUrlStorageKey) || "http://127.0.0.1:8000";
+  if (typeof window === "undefined") return defaultApiBaseUrl;
+  return window.localStorage.getItem(apiBaseUrlStorageKey) || defaultApiBaseUrl;
 }
 
 export function saveApiBaseUrl(value: string) {

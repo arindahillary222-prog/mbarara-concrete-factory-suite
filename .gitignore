@@ -4,6 +4,7 @@ dist-standalone/
 .netlify/
 .wrangler/
 .venv/
+local-private/
 __pycache__/
 .pytest_cache/
 .mypy_cache/

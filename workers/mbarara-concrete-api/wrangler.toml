@@ -1,0 +1,15 @@
+name = "mbarara-concrete-api"
+main = "src/index.js"
+compatibility_date = "2026-07-13"
+
+workers_dev = true
+
+kv_namespaces = [
+  { binding = "PRODUCT_PHOTOS", id = "7807e210bec54ce1b3ffd37f92e1b7db" }
+]
+
+[vars]
+APP_NAME = "Mbarara Integrated Concrete Products Factory API"
+ENVIRONMENT = "production"
+OWNER_EMAIL = "arindahillary222@gmail.com"
+ALLOWED_ORIGINS = "https://mbarara-concrete-platform.pages.dev,https://mbarara-concrete-factory.pages.dev,https://silver-heliotrope-a8bb95website.netlify.app,http://127.0.0.1:5173,http://localhost:5173"
