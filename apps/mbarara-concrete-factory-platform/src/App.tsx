@@ -21,6 +21,7 @@ import { ProductionModule } from "./modules/ProductionModule";
 import { PublicWebsiteModule } from "./modules/PublicWebsiteModule";
 import { QualityModule } from "./modules/QualityModule";
 import { ReportPdfGenerator } from "./modules/ReportPdfGenerator";
+import { SoftwareCoreModule } from "./modules/SoftwareCoreModule";
 import type { AppState } from "./types";
 
 const storageKey = "mbarara-concrete-factory-platform-state-v4-conservative-diesel";
@@ -56,6 +57,7 @@ export default function App() {
     erp: <ErpModule state={state} setState={setState} erp={erp} />,
     market: <MarketIntelligenceModule state={state} />,
     database: <DatabaseModule />,
+    software: <SoftwareCoreModule />,
     report: <ReportPdfGenerator state={state} erp={erp} />,
   };
 

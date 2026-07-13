@@ -17,8 +17,10 @@ FastAPI backend for the Mbarara Integrated Concrete Products Factory ERP and B2B
 - `app/models.py` - strict SQLAlchemy models and enums
 - `app/schemas.py` - Pydantic request and response schemas
 - `app/services.py` - transactional workflow logic
+- `app/security.py` - PBKDF2 password hashing and signed access-token helpers
 - `app/api.py` - API routes
 - `migrations/001_initial_schema.sql` - PostgreSQL production schema
+- `migrations/002_security_schema.sql` - owner/staff users and immutable audit trail
 
 ## Setup
 
@@ -36,6 +38,7 @@ Create the database, then run:
 
 ```powershell
 psql -U postgres -d mbarara_factory -f migrations/001_initial_schema.sql
+psql -U postgres -d mbarara_factory -f migrations/002_security_schema.sql
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
@@ -50,6 +53,40 @@ API docs:
 ```text
 http://localhost:8000/docs
 ```
+
+## Owner Login
+
+Create the first owner account once after applying the migrations:
+
+```text
+POST /api/v1/auth/bootstrap-owner
+```
+
+Body:
+
+```json
+{
+  "email": "arindahillary222@gmail.com",
+  "full_name": "Hillary Arindamukama",
+  "password": "use-a-private-password-here",
+  "setup_key": "the-value-from-BOOTSTRAP_OWNER_SETUP_KEY"
+}
+```
+
+Then sign in:
+
+```text
+POST /api/v1/auth/login
+```
+
+Use the returned bearer token in the `Authorization` header for protected ERP routes:
+
+```text
+Authorization: Bearer <access_token>
+```
+
+Protected routes include product setup, suppliers, customers, inventory, production batches, quality tests, expenses,
+competitor records, contractor orders, production finalisation, dispatch, audit logs, and the software-core status endpoint.
 
 ## Local Stack Scripts
 

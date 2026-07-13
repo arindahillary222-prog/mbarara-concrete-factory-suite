@@ -18,6 +18,7 @@ from app.models import (
     QualityApprovalState,
     SaleStatus,
     SupplierSupplyCategory,
+    UserRole,
 )
 
 
@@ -272,3 +273,62 @@ class DispatchResponse(StrictBaseModel):
 class ErrorResponse(StrictBaseModel):
     detail: str
 
+
+class OwnerBootstrapRequest(StrictBaseModel):
+    email: str = Field(min_length=5, max_length=255)
+    full_name: str = Field(min_length=2, max_length=200)
+    password: str = Field(min_length=10, max_length=128)
+    setup_key: str | None = Field(default=None, max_length=255)
+
+    @field_validator("email")
+    @classmethod
+    def normalise_email(cls, value: str) -> str:
+        return value.strip().lower()
+
+
+class LoginRequest(StrictBaseModel):
+    email: str = Field(min_length=5, max_length=255)
+    password: str = Field(min_length=1, max_length=128)
+
+    @field_validator("email")
+    @classmethod
+    def normalise_email(cls, value: str) -> str:
+        return value.strip().lower()
+
+
+class UserRead(StrictBaseModel):
+    id: uuid.UUID
+    email: str
+    full_name: str
+    role: UserRole
+    is_active: bool
+    last_login_at: datetime | None
+    created_at: datetime
+    updated_at: datetime
+
+
+class AccessTokenResponse(StrictBaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    expires_in_seconds: int
+    user: UserRead
+
+
+class AuditLogRead(StrictBaseModel):
+    id: uuid.UUID
+    actor_user_id: uuid.UUID | None
+    action: str
+    entity_type: str
+    entity_id: uuid.UUID | None
+    event_metadata: dict[str, Any]
+    created_at: datetime
+
+
+class SoftwareStatusResponse(StrictBaseModel):
+    app_name: str
+    environment: str
+    database_engine: str
+    security_model: str
+    protected_modules: list[str]
+    currency_policy: str
+    owner_control: str

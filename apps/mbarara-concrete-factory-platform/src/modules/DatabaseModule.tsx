@@ -12,6 +12,8 @@ const tables = [
   ["expenses", "Payroll, utilities, maintenance, security, transport, and other operating costs."],
   ["quality_tests", "Batch-linked lab results for strength, absorption, density, dimensions, defects, and approval."],
   ["competitor_records", "Future market-intelligence extension for competitors and verification metadata."],
+  ["users", "Owner, admin, manager, staff, and viewer accounts for protected ERP access."],
+  ["audit_logs", "Immutable security and operational activity trail for accountability."],
 ];
 
 const relationships = [
@@ -24,6 +26,7 @@ const relationships = [
   ["inventory_transactions.inventory_id", "inventory.inventory_id"],
   ["inventory_transactions.production_batch_id", "production_batches.production_batch_id"],
   ["expenses.supplier_id", "suppliers.supplier_id"],
+  ["audit_logs.actor_user_id", "users.id"],
 ];
 
 export function DatabaseModule() {

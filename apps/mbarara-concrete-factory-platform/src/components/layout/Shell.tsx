@@ -10,6 +10,7 @@ import {
   Landmark,
   PackageSearch,
   ReceiptText,
+  ShieldCheck,
   ShoppingCart,
   Store,
 } from "lucide-react";
@@ -31,6 +32,7 @@ export type AppTab =
   | "erp"
   | "market"
   | "database"
+  | "software"
   | "report";
 
 const navItems: { id: AppTab; label: string; icon: ReactNode }[] = [
@@ -43,6 +45,7 @@ const navItems: { id: AppTab; label: string; icon: ReactNode }[] = [
   { id: "erp", label: "ERP", icon: <ShoppingCart size={18} /> },
   { id: "market", label: "Market Intel", icon: <PackageSearch size={18} /> },
   { id: "database", label: "PostgreSQL", icon: <Database size={18} /> },
+  { id: "software", label: "Software Core", icon: <ShieldCheck size={18} /> },
   { id: "report", label: "Master PDF", icon: <FileText size={18} /> },
 ];
 

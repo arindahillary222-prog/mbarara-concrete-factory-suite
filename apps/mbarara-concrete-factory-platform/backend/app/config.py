@@ -21,9 +21,17 @@ class Settings(BaseSettings):
         description="Local-only convenience. Production should use migrations/001_initial_schema.sql.",
     )
     cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:5173", "http://127.0.0.1:5173"])
+    api_secret_key: str = Field(
+        default="change-this-before-production",
+        description="Secret used to sign owner/staff access tokens. Set a strong value in production.",
+    )
+    access_token_expire_minutes: int = Field(default=720)
+    bootstrap_owner_setup_key: str | None = Field(
+        default=None,
+        description="Optional one-time setup key required by /api/v1/auth/bootstrap-owner.",
+    )
 
 
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
-

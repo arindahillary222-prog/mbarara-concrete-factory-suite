@@ -177,8 +177,33 @@ CREATE TABLE competitor_records (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
+-- Owner/staff access control for the standard ERP software layer.
+CREATE TABLE users (
+  user_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  email text UNIQUE NOT NULL,
+  full_name text NOT NULL,
+  role text NOT NULL CHECK (role IN ('owner', 'admin', 'manager', 'staff', 'viewer')),
+  password_hash text NOT NULL,
+  is_active boolean NOT NULL DEFAULT true,
+  last_login_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE audit_logs (
+  audit_log_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  actor_user_id uuid REFERENCES users(user_id) ON DELETE SET NULL,
+  action text NOT NULL,
+  entity_type text NOT NULL,
+  entity_id uuid,
+  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
 CREATE INDEX idx_sales_customer_date ON sales(customer_id, sale_date);
 CREATE INDEX idx_sales_product_date ON sales(product_id, sale_date);
 CREATE INDEX idx_inventory_transactions_item_date ON inventory_transactions(inventory_id, transaction_date);
 CREATE INDEX idx_quality_tests_batch ON quality_tests(production_batch_id);
 CREATE INDEX idx_production_batches_product_date ON production_batches(product_id, production_date);
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_audit_logs_actor_date ON audit_logs(actor_user_id, created_at);
