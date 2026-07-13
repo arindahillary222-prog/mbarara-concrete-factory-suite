@@ -350,7 +350,7 @@ function App() {
         </div>
       </header>
 
-      <main className="mx-auto grid max-w-[1560px] gap-5 px-5 py-5 xl:grid-cols-[430px_1fr] no-print">
+      <main className="mx-auto grid max-w-[1560px] gap-5 px-5 py-5 xl:grid-cols-[430px_minmax(0,1fr)] no-print">
         <aside className="space-y-4">
           <form onSubmit={saveBatch} className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
             <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-factory-navy">
@@ -435,7 +435,7 @@ function App() {
           </section>
         </aside>
 
-        <section className="space-y-5">
+        <section className="min-w-0 space-y-5">
           <div className="grid gap-3 lg:grid-cols-4">
             <MetricCard label="Passed batches" value={String(passed)} tone="green" />
             <MetricCard label="Failed batches" value={String(failed)} tone="clay" />

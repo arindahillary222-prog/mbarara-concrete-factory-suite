@@ -464,7 +464,7 @@ function App() {
         </div>
       </header>
 
-      <main className="mx-auto grid max-w-[1560px] gap-5 px-5 py-5 xl:grid-cols-[430px_1fr]">
+      <main className="mx-auto grid max-w-[1560px] gap-5 px-5 py-5 xl:grid-cols-[430px_minmax(0,1fr)]">
         <aside className="space-y-4">
           <StockForm title="Add Stock" icon={<PackagePlus size={18} />} onSubmit={addReceipt}>
             <SelectField label="Material" value={receiptForm.itemId} onChange={(value) => setReceiptForm({ ...receiptForm, itemId: value })} />
@@ -541,7 +541,7 @@ function App() {
           </section>
         </aside>
 
-        <section className="space-y-5">
+        <section className="min-w-0 space-y-5">
           <div className="grid gap-3 lg:grid-cols-4">
             <MetricCard label="Current inventory value" value={formatUGX(totalStockValue, true)} tone="navy" />
             <MetricCard label="Monthly usage value" value={formatUGX(monthlyUsageValue, true)} tone="green" />

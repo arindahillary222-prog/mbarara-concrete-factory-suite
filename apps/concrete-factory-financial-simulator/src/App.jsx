@@ -542,7 +542,7 @@ function App() {
         </div>
       </header>
 
-      <main className="mx-auto grid max-w-[1540px] gap-5 px-5 py-5 xl:grid-cols-[410px_1fr]">
+      <main className="mx-auto grid max-w-[1540px] gap-5 px-5 py-5 xl:grid-cols-[410px_minmax(0,1fr)]">
         <aside className="space-y-4">
           {inputGroups.map((group) => (
             <section key={group.title} className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
@@ -569,7 +569,7 @@ function App() {
           ))}
         </aside>
 
-        <section className="space-y-5">
+        <section className="min-w-0 space-y-5">
           <div className="grid gap-3 lg:grid-cols-4">
             <MetricCard
               label="Monthly revenue"
