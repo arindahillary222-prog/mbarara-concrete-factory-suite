@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   BadgeCheck,
@@ -1023,28 +1023,13 @@ function ProductCatalogueGallery({
   onOwnerPhotoUpload: (productId: string, index: number, file: File) => void;
   onOwnerPhotoRemove: (productId: string, index: number) => void;
 }) {
-  const productSelectorRef = useRef<HTMLDivElement>(null);
   const images = catalogueImagesForProduct(selected, ownerPhotos);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const mainImage = images[selectedImageIndex] ?? images[0];
   const otherImages = images.filter((_, index) => index !== selectedImageIndex);
-  const selectedProductIndex = Math.max(0, products.findIndex((product) => product.id === selected.id));
-
-  function selectAdjacentProduct(direction: -1 | 1) {
-    const nextIndex = (selectedProductIndex + direction + products.length) % products.length;
-    onSelect(products[nextIndex]);
-    setSelectedImageIndex(0);
-  }
 
   function selectAdjacentImage(direction: -1 | 1) {
     setSelectedImageIndex((current) => (current + direction + images.length) % images.length);
-  }
-
-  function scrollProductSelector(direction: -1 | 1) {
-    productSelectorRef.current?.scrollBy({
-      left: direction * Math.max(280, productSelectorRef.current.clientWidth * 0.75),
-      behavior: "smooth",
-    });
   }
 
   return (
@@ -1065,43 +1050,25 @@ function ProductCatalogueGallery({
         </div>
       </div>
 
-      <div className="mt-5 flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => scrollProductSelector(-1)}
-          aria-label="Scroll products left"
-          className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-slate-200 bg-white text-slate-950 shadow-sm hover:bg-amber-50"
-        >
-          <ChevronLeft size={22} />
-        </button>
-        <div ref={productSelectorRef} className="flex max-w-full flex-1 snap-x gap-2 overflow-x-auto scroll-smooth pb-2">
-          {products.map((product) => (
-            <button
-              key={product.id}
-              type="button"
-              onClick={() => {
-                onSelect(product);
-                setSelectedImageIndex(0);
-              }}
-              className={`min-w-[11rem] max-w-[14rem] snap-start whitespace-normal break-words rounded-md border px-3 py-2 text-left text-sm font-bold ${
-                selected.id === product.id
-                  ? "border-amber-400 bg-amber-50 text-slate-950"
-                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-              }`}
-            >
-              <span className="block text-xs uppercase text-slate-500">{product.code}</span>
-              {product.name}
-            </button>
-          ))}
-        </div>
-        <button
-          type="button"
-          onClick={() => scrollProductSelector(1)}
-          aria-label="Scroll products right"
-          className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-slate-200 bg-white text-slate-950 shadow-sm hover:bg-amber-50"
-        >
-          <ChevronRight size={22} />
-        </button>
+      <div className="mt-5 flex max-w-full flex-wrap gap-2 pb-2">
+        {products.map((product) => (
+          <button
+            key={product.id}
+            type="button"
+            onClick={() => {
+              onSelect(product);
+              setSelectedImageIndex(0);
+            }}
+            className={`min-w-[9rem] max-w-[14rem] flex-1 whitespace-normal break-words rounded-md border px-3 py-2 text-left text-sm font-bold sm:flex-none ${
+              selected.id === product.id
+                ? "border-amber-400 bg-amber-50 text-slate-950"
+                : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+            }`}
+          >
+            <span className="block text-xs uppercase text-slate-500">{product.code}</span>
+            {product.name}
+          </button>
+        ))}
       </div>
 
       <div className="mt-5 grid max-w-full gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
@@ -1143,25 +1110,7 @@ function ProductCatalogueGallery({
 
         <div className="min-w-0 rounded-lg border border-slate-200 bg-slate-50 p-5">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">{copy.displayControl}</p>
-          <div className="mt-2 flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => selectAdjacentProduct(-1)}
-              aria-label="Previous product"
-              className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-slate-300 bg-white text-slate-950 hover:bg-amber-50"
-            >
-              <ChevronLeft size={21} />
-            </button>
-            <h3 className="min-w-0 flex-1 break-words text-2xl font-extrabold text-slate-950">{selected.name}</h3>
-            <button
-              type="button"
-              onClick={() => selectAdjacentProduct(1)}
-              aria-label="Next product"
-              className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-slate-300 bg-white text-slate-950 hover:bg-amber-50"
-            >
-              <ChevronRight size={21} />
-            </button>
-          </div>
+          <h3 className="mt-1 break-words text-2xl font-extrabold text-slate-950">{selected.name}</h3>
           <label className="mt-5 grid gap-2 text-sm font-semibold text-slate-700">
             {copy.choosePhoto}
             <select
@@ -1268,20 +1217,51 @@ function ProductCard({
   onOwnerPhotoRemove: (productId: string, index: number) => void;
 }) {
   const locked = product.availableStock === 0 || product.curingStatus !== "Released for Sale" || product.approvalState !== "Internal Pass";
-  const ownerMainPhoto = ownerPhotos[product.id]?.[0]?.src;
-  const hasOwnerMainPhoto = Boolean(ownerPhotos[product.id]?.[0]);
+  const images = catalogueImagesForProduct(product, ownerPhotos);
+  const [cardImageIndex, setCardImageIndex] = useState(0);
+  const currentImage = images[cardImageIndex] ?? images[0];
+  const hasOwnerCurrentPhoto = Boolean(ownerPhotos[product.id]?.[cardImageIndex]);
+
+  useEffect(() => {
+    setCardImageIndex(0);
+  }, [product.id]);
+
+  function selectCardPhoto(direction: -1 | 1) {
+    setCardImageIndex((current) => (current + direction + images.length) % images.length);
+  }
 
   return (
     <article className="group relative max-w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
       <div className="relative aspect-[4/3] overflow-hidden bg-slate-200">
         <FallbackImage
-          src={ownerMainPhoto ?? product.image}
-          fallbackSrc="/assets/images/product-blocks.png"
-          alt={`${product.name} product visual`}
+          src={currentImage?.src ?? product.image}
+          fallbackSrc={currentImage?.fallbackSrc ?? product.image}
+          alt={currentImage?.label ?? `${product.name} product visual`}
           className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
         />
         <div className="absolute left-3 top-3 rounded-md bg-slate-950 px-3 py-2 text-xs font-extrabold text-amber-300">
           {product.code}
+        </div>
+        <div className="pointer-events-none absolute inset-y-0 left-0 right-0 flex items-center justify-between px-3">
+          <button
+            type="button"
+            onClick={() => selectCardPhoto(-1)}
+            aria-label={`Previous ${product.name} photo`}
+            className="pointer-events-auto grid h-10 w-10 place-items-center rounded-full bg-slate-950/80 text-white shadow-lg hover:bg-slate-950"
+          >
+            <ChevronLeft size={22} />
+          </button>
+          <button
+            type="button"
+            onClick={() => selectCardPhoto(1)}
+            aria-label={`Next ${product.name} photo`}
+            className="pointer-events-auto grid h-10 w-10 place-items-center rounded-full bg-slate-950/80 text-white shadow-lg hover:bg-slate-950"
+          >
+            <ChevronRight size={22} />
+          </button>
+        </div>
+        <div className="absolute bottom-3 right-3 rounded-full bg-white/95 px-3 py-1 text-xs font-extrabold text-slate-950 shadow">
+          {copy.photo} {cardImageIndex + 1} {copy.of} {images.length}
         </div>
         {locked ? (
           <div className="absolute inset-0 flex items-center justify-center bg-slate-950/55 backdrop-blur-[2px]">
@@ -1292,6 +1272,9 @@ function ProductCard({
         ) : null}
       </div>
       <div className="p-5">
+        <p className="mb-3 line-clamp-2 text-xs font-bold leading-5 text-slate-500">
+          {currentImage?.label}
+        </p>
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h3 className="break-words text-lg font-extrabold text-slate-950">{product.name}</h3>
@@ -1346,15 +1329,15 @@ function ProductCard({
                   className="sr-only"
                   onChange={(event) => {
                     const file = event.target.files?.[0];
-                    if (file) onOwnerPhotoUpload(product.id, 0, file);
+                    if (file) onOwnerPhotoUpload(product.id, cardImageIndex, file);
                     event.currentTarget.value = "";
                   }}
                 />
               </label>
-              {hasOwnerMainPhoto ? (
+              {hasOwnerCurrentPhoto ? (
                 <button
                   type="button"
-                  onClick={() => onOwnerPhotoRemove(product.id, 0)}
+                  onClick={() => onOwnerPhotoRemove(product.id, cardImageIndex)}
                   className="rounded-md border border-emerald-700 px-3 py-2 text-xs font-bold text-emerald-900 hover:bg-white"
                 >
                   {copy.removeUploadedPhoto}
@@ -1392,7 +1375,6 @@ export function PublicWebsiteModule({ state, displayLanguage }: { state: AppStat
   const [ownerMessage, setOwnerMessage] = useState("");
   const [ownerBusy, setOwnerBusy] = useState(false);
   const [ownerPhotos, setOwnerPhotos] = useState<OwnerCataloguePhotos>({});
-  const productRailRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const visible = shouldShowOwnerGate();
@@ -1485,13 +1467,6 @@ export function PublicWebsiteModule({ state, displayLanguage }: { state: AppStat
   const remainingCredit = approvedCreditLimit - outstandingBalance;
   const deliveryCost = basketWeight >= 10000 ? 0 : 180000;
   const creditBlocked = paymentMode === "credit" && basketTotal + deliveryCost > remainingCredit;
-
-  function scrollProductRail(direction: -1 | 1) {
-    productRailRef.current?.scrollBy({
-      left: direction * Math.max(330, productRailRef.current.clientWidth * 0.85),
-      behavior: "smooth",
-    });
-  }
 
   return (
     <div className="min-h-screen max-w-full overflow-x-hidden bg-slate-50">
@@ -1669,44 +1644,20 @@ export function PublicWebsiteModule({ state, displayLanguage }: { state: AppStat
             </div>
           </div>
 
-          <div className="relative">
-            <div className="mb-3 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => scrollProductRail(-1)}
-                aria-label="Scroll product cards left"
-                className="grid h-11 w-11 place-items-center rounded-full border border-slate-200 bg-white text-slate-950 shadow-sm hover:bg-amber-50"
-              >
-                <ChevronLeft size={22} />
-              </button>
-              <button
-                type="button"
-                onClick={() => scrollProductRail(1)}
-                aria-label="Scroll product cards right"
-                className="grid h-11 w-11 place-items-center rounded-full border border-slate-200 bg-white text-slate-950 shadow-sm hover:bg-amber-50"
-              >
-                <ChevronRight size={22} />
-              </button>
-            </div>
-            <div
-              ref={productRailRef}
-              className="flex max-w-full snap-x gap-5 overflow-x-auto scroll-smooth pb-4"
-            >
-              {filteredProducts.map((product) => (
-                <div key={product.id} className="w-[min(88vw,360px)] shrink-0 snap-start">
-                  <ProductCard
-                    product={product}
-                    onSelect={setSelectedProduct}
-                    onViewGallery={setGalleryProduct}
-                    copy={copy}
-                    ownerMode={ownerMode}
-                    ownerPhotos={ownerPhotos}
-                    onOwnerPhotoUpload={handleOwnerPhotoUpload}
-                    onOwnerPhotoRemove={handleOwnerPhotoRemove}
-                  />
-                </div>
-              ))}
-            </div>
+          <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
+            {filteredProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onSelect={setSelectedProduct}
+                onViewGallery={setGalleryProduct}
+                copy={copy}
+                ownerMode={ownerMode}
+                ownerPhotos={ownerPhotos}
+                onOwnerPhotoUpload={handleOwnerPhotoUpload}
+                onOwnerPhotoRemove={handleOwnerPhotoRemove}
+              />
+            ))}
           </div>
 
           <ProductCatalogueGallery
