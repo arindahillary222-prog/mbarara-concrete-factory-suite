@@ -75,20 +75,6 @@ export default function App() {
               >
                 Download saved PDF
               </a>
-              <a
-                href={publicAsset("Mbarara_Integrated_Concrete_Factory_30_Minute_Explainer.mp4")}
-                download
-                className="inline-flex items-center rounded-md bg-factory-blue px-3 py-2 text-xs font-semibold text-white hover:bg-[#2f5f93]"
-              >
-                Download US 30-min video
-              </a>
-              <a
-                href={publicAsset("Mbarara_Integrated_Concrete_Factory_US_English_Walkthrough.mp4")}
-                download
-                className="inline-flex items-center rounded-md bg-[#7c3f2e] px-3 py-2 text-xs font-semibold text-white hover:bg-[#653223]"
-              >
-                Download US walkthrough
-              </a>
               <button
                 type="button"
                 onClick={resetSeedData}
@@ -118,8 +104,8 @@ export default function App() {
               kerbstones, starter inventory, basic QC, utilities, and working capital.
             </p>
             <p>
-              Public sharing should use a permanent hosted site such as Netlify, not a temporary laptop tunnel. Narrated video
-              downloads use the installed US English Windows voice.
+              Public sharing should use the permanent hosted website. Any future project video will use approved human narration
+              before it is made available for download.
             </p>
           </div>
         </Panel>

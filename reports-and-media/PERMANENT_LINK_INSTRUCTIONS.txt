@@ -20,7 +20,8 @@ If you move the ZIP to another computer, unzip it first, then upload the extract
 The uploaded site contains:
 - React dashboard for the UGX 130,000,000 Phase 1 model
 - Master PDF report download
-- US English 30-minute explainer video download
-- US English walkthrough video download
+- Funding documents and human-narration scripts
+
+Previous synthetic-narration videos are not included on the public site.
 
 After upload, test from phone mobile data, not only laptop Wi-Fi.

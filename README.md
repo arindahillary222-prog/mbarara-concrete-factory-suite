@@ -38,10 +38,10 @@ All currency values are in **UGX only**.
   PostgreSQL-ready schema for future ERP integration.
 
 - `reports-and-media/`  
-  Investor PDF reports, merged prompt coverage report, the US English 30-minute explainer video, the US English walkthrough video, and deployment notes.
+  Investor PDF reports, merged prompt coverage report, and deployment notes. Previous synthetic-narration videos have been removed.
 
 - `apps/mbarara-concrete-factory-platform/public/funding-pack/`  
-  Serious investor funding pack for website downloads and outreach: 10-slide pitch deck, pitch deck PDF, one-page summary, UGX 130M Phase 1 budget, founder story/script, data file, complete ZIP bundle, and 3-minute US English funding video.
+  Serious investor funding pack for website downloads and outreach: 10-slide pitch deck, pitch deck PDF, one-page summary, UGX 130M Phase 1 budget, founder story and narration script, data file, and complete ZIP bundle.
 
 ## Local setup
 

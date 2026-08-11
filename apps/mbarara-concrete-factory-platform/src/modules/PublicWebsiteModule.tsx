@@ -19,7 +19,6 @@ import {
   MessageCircle,
   PackageCheck,
   Phone,
-  PlayCircle,
   Presentation,
   QrCode,
   ShieldCheck,
@@ -114,7 +113,7 @@ const catalogueViewCount = 10;
 const fundingDownloads = [
   {
     title: "Complete Funding Pack",
-    detail: "ZIP bundle with the pitch deck, one-page summary, UGX 130M budget, data file, script, and 3-minute video.",
+    detail: "ZIP bundle with the pitch deck, one-page summary, UGX 130M budget, data file, and narration script.",
     href: "/funding-pack/Mbarara_Concrete_Factory_COMPLETE_Funding_Pack.zip",
     icon: Download,
   },
@@ -141,12 +140,6 @@ const fundingDownloads = [
     detail: "Exact starter budget: UGX 128M essential startup cost plus UGX 2M protected buffer.",
     href: "/funding-pack/Mbarara_Concrete_Factory_UGX_130M_Phase_1_Budget.pdf",
     icon: ClipboardList,
-  },
-  {
-    title: "3-Minute Funding Video",
-    detail: "US English narrated video explaining the project, model, risks, and funding ask.",
-    href: "/funding-pack/Mbarara_Concrete_Factory_3_Minute_Funding_Pitch.mp4",
-    icon: PlayCircle,
   },
   {
     title: "Master PDF Report",
