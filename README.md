@@ -6,7 +6,12 @@ Professional planning, simulation, ERP, public website, reporting, and backend s
 
 Customer-facing website, product catalogue, inquiry flow, QR code, founder section, logistics/free-delivery messaging, and MTN/Airtel Mobile Money information:
 
-**https://mbarara-concrete-factory.netlify.app/**
+**https://mbarara-concrete-factory.pages.dev/**
+
+## Business plans
+
+- English business plan: **https://mbarara-business-plan-english.pages.dev/**
+- German business plan: **https://mbarara-business-plan-german.pages.dev/**
 
 ## Project note
 
@@ -73,11 +78,11 @@ The backend is structured for PostgreSQL and future ERP integration. Local datab
 
 ## Public sharing
 
-For customers, colleagues in Uganda, Germany, or anywhere else, share the Netlify link:
+For customers, colleagues in Uganda, Germany, or anywhere else, share the permanent Cloudflare Pages link:
 
-**https://mbarara-concrete-factory.netlify.app/**
+**https://mbarara-concrete-factory.pages.dev/**
 
-GitHub is for project source code, reports, and technical handover. The Netlify link is the simple public website link.
+GitHub is for project source code, reports, and technical handover. The Cloudflare Pages link is the simple public website link.
 
 ## Disclaimer
 
